@@ -1,0 +1,10 @@
+services:
+  app:
+    build:
+      context: ..
+      target: builder
+    command: air
+    environment:
+      - ENV=development
+    ports:
+      - 8080:8080

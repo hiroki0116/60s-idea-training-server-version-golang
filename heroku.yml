@@ -1,0 +1,8 @@
+build:
+  docker:
+    web: Dockerfile
+    worker:
+      dockerfile: Dockerfile
+      target: builder 
+run:
+  web: /main
