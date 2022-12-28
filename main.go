@@ -25,9 +25,7 @@ func init() {
 	// collections
 	db.ConnectDB(os.Getenv("MONGO_URI"))
 	server = gin.Default()
-	server.GET("/api/healthcheck", func(c *gin.Context) {
-		c.JSON(200, gin.H{"message": "ok"})
-	})
+
 }
 
 func main() {
