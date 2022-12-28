@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"idea-training-version-go/internals/db"
 	"log"
 	"os"
 
@@ -21,6 +22,8 @@ func init() {
 			log.Fatalf("Error loading .env file: %v", err)
 		}
 	}
+	// collections
+	db.ConnectDB(os.Getenv("MONGO_URI"))
 	server = gin.Default()
 	server.GET("/api/healthcheck", func(c *gin.Context) {
 		c.JSON(200, gin.H{"message": "ok"})
