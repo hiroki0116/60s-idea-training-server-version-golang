@@ -16,8 +16,10 @@ var (
 
 func init() {
 	ctx = context.TODO()
-	if err := godotenv.Load(); err != nil {
-		log.Fatalf("Error loading .env file: %v", err)
+	if os.Getenv("STAGE") != "production" {
+		if err := godotenv.Load(); err != nil {
+			log.Fatalf("Error loading .env file: %v", err)
+		}
 	}
 	server = gin.Default()
 	server.GET("/api/healthcheck", func(c *gin.Context) {
