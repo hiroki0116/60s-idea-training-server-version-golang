@@ -13,17 +13,19 @@ import (
 var (
 	server *gin.Engine
 	ctx    context.Context
+	err    error
 )
 
 func init() {
 	ctx = context.TODO()
 	if os.Getenv("STAGE") != "production" {
-		if err := godotenv.Load(); err != nil {
+		if err = godotenv.Load(); err != nil {
 			log.Fatalf("Error loading .env file: %v", err)
 		}
 	}
-	// collections
+	// Connect to MongoDB
 	db.ConnectDB(os.Getenv("MONGO_URI"))
+
 	server = gin.Default()
 
 }
