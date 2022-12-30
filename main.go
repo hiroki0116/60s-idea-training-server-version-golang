@@ -6,6 +6,8 @@ import (
 	"log"
 	"os"
 
+	errors "github.com/pkg/errors"
+
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 )
@@ -20,7 +22,7 @@ func init() {
 	ctx = context.TODO()
 	if os.Getenv("STAGE") != "production" {
 		if err = godotenv.Load(); err != nil {
-			log.Fatalf("Error loading .env file: %v", err)
+			errors.Wrap(err, "Error loading .env file")
 		}
 	}
 	// Connect to MongoDB
