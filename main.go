@@ -6,6 +6,8 @@ import (
 	"log"
 	"os"
 
+	errors "github.com/pkg/errors"
+
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 )
@@ -13,21 +15,21 @@ import (
 var (
 	server *gin.Engine
 	ctx    context.Context
+	err    error
 )
 
 func init() {
 	ctx = context.TODO()
 	if os.Getenv("STAGE") != "production" {
-		if err := godotenv.Load(); err != nil {
-			log.Fatalf("Error loading .env file: %v", err)
+		if err = godotenv.Load(); err != nil {
+			errors.Wrap(err, "Error loading .env file")
 		}
 	}
-	// collections
+	// Connect to MongoDB
 	db.ConnectDB(os.Getenv("MONGO_URI"))
+
 	server = gin.Default()
-	server.GET("/api/healthcheck", func(c *gin.Context) {
-		c.JSON(200, gin.H{"message": "ok"})
-	})
+
 }
 
 func main() {
