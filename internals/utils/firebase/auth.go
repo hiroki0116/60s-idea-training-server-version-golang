@@ -3,9 +3,12 @@ package firebase
 import (
 	"context"
 	"idea-training-version-go/internals/models"
+	"log"
+	"os"
 
 	firebase "firebase.google.com/go"
 	"firebase.google.com/go/auth"
+	"github.com/joho/godotenv"
 	errors "github.com/pkg/errors"
 	"google.golang.org/api/option"
 )
@@ -18,10 +21,15 @@ var (
 func init() {
 	// Get an auth client from the firebase app.
 	ctx = context.Background()
-	opt := option.WithCredentialsFile("/Users/hirokiseino/go/src/idea-training-version-go/internals/utils/firebase/firebaseConfig/devAccount.json")
+	if os.Getenv("STAGE") != "production" {
+		if err := godotenv.Load(); err != nil {
+			errors.Wrap(err, "Error loading .env file")
+		}
+	}
+	opt := option.WithCredentialsJSON([]byte(os.Getenv("FIREBASE_CRED")))
 	app, err := firebase.NewApp(ctx, nil, opt)
 	if err != nil {
-		panic("Error initializing firebase app")
+		log.Fatalln("Error initializing firebase app", err)
 	}
 	client, err = app.Auth(ctx)
 	if err != nil {
