@@ -1,57 +1,50 @@
-package firebase_auth
+package firebase
 
 import (
 	"context"
 	"idea-training-version-go/internals/models"
-	"os"
 
 	firebase "firebase.google.com/go"
-	auth "firebase.google.com/go/auth"
+	"firebase.google.com/go/auth"
 	errors "github.com/pkg/errors"
 	"google.golang.org/api/option"
 )
 
 var (
-	opt    option.ClientOption
-	config *firebase.Config
 	client *auth.Client
+	ctx    context.Context
 )
 
 func init() {
-	// Initialize firebase admin
-	if os.Getenv("STAGE") == "production" {
-		opt = option.WithCredentialsFile("./firebaseConfig/prodAccount.json")
-		config = &firebase.Config{ProjectID: "seconds-idea-training-prod"}
-	} else {
-		opt = option.WithCredentialsFile("./firebaseConfig/devAccount.json")
-		config = &firebase.Config{ProjectID: "seconds-idea-training-dev"}
-	}
-
-	app, err := firebase.NewApp(context.Background(), config, opt)
+	// Get an auth client from the firebase app.
+	ctx = context.Background()
+	opt := option.WithCredentialsFile("/Users/hirokiseino/go/src/idea-training-version-go/internals/utils/firebase/firebaseConfig/devAccount.json")
+	app, err := firebase.NewApp(ctx, nil, opt)
 	if err != nil {
-		errors.Wrap(err, "Error initializing firebase app")
+		panic("Error initializing firebase app")
 	}
-	if client, err = app.Auth(context.Background()); err != nil {
+	client, err = app.Auth(ctx)
+	if err != nil {
 		errors.Wrap(err, "Error getting firebase auth client")
 	}
 }
 
-func CreateUserInFirebase(email, password, firstName, lastName string) (*auth.UserRecord, error) {
+func CreateUserInFirebase(email, password, firstName, lastName string) (string, error) {
 	params := (&auth.UserToCreate{}).
 		Email(email).
 		Password(password).
 		DisplayName(firstName + " " + lastName).
 		Disabled(false)
 
-	u, err := client.CreateUser(context.Background(), params)
+	u, err := client.CreateUser(ctx, params)
 	if err != nil {
-		return nil, errors.Wrap(err, "Error creating user in firebase")
+		return "", errors.Wrap(err, "Error creating user in firebase")
 	}
-	return u, nil
+	return u.UID, nil
 }
 
 func GetUserInFirebase(email string) (*auth.UserRecord, error) {
-	u, err := client.GetUserByEmail(context.Background(), email)
+	u, err := client.GetUserByEmail(ctx, email)
 	if err != nil {
 		return nil, errors.Wrap(err, "Error getting user in firebase")
 	}
@@ -67,7 +60,7 @@ func UpdateUserInFirebase(user *models.User) (*auth.UserRecord, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "Error getting user in firebase")
 	}
-	u, err := client.UpdateUser(context.Background(), existingUser.UID, params)
+	u, err := client.UpdateUser(ctx, existingUser.UID, params)
 	if err != nil {
 		return nil, errors.Wrap(err, "Error updating user in firebase")
 	}
@@ -75,7 +68,7 @@ func UpdateUserInFirebase(user *models.User) (*auth.UserRecord, error) {
 }
 
 func DeleteUserInFirebase(uid string) error {
-	err := client.DeleteUser(context.Background(), uid)
+	err := client.DeleteUser(ctx, uid)
 	if err != nil {
 		return errors.Wrap(err, "Error deleting user in firebase")
 	}
