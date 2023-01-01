@@ -54,8 +54,8 @@ func TestMain(m *testing.M) {
 	userroute.UserRoutes(basepath)
 	unitTest.SetRouter(server)
 
-	// populate sample data
-	// DO SOMETHING
+	log.Println("Populating sample data in the beginning!")
+	PopulateUserSampleData(usercollection, ctx)
 
 	newLog := log.New(os.Stdout, "", log.Llongfile|log.Ldate|log.Ltime)
 	unitTest.SetLog(newLog)

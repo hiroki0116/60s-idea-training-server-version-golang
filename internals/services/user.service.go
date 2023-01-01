@@ -11,11 +11,13 @@ import (
 
 	"github.com/gin-gonic/gin"
 	errors "github.com/pkg/errors"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type IUserService interface {
 	SignUp(ctx *gin.Context)
+	UpdateUser(ctx *gin.Context)
 }
 
 type UserService struct {
@@ -91,5 +93,51 @@ func (us *UserService) SignUp(ctx *gin.Context) {
 	session.EndSession(context.Background())
 
 	res := utils.NewHttpResponse(http.StatusOK, newUser)
+	ctx.JSON(http.StatusOK, res)
+}
+
+func (us *UserService) UpdateUser(ctx *gin.Context) {
+	type RequestBody struct {
+		Email     string `json:"email,omitempty"`
+		FirstName string `json:"firstName,omitempty"`
+		LastName  string `json:"lastName,omitempty"`
+	}
+
+	var req RequestBody
+	var err error
+	var updatedUser *models.User
+
+	// Convert id to primitive.ObjectID
+	id := ctx.Param("id")
+	userID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		res := utils.NewHttpResponse(http.StatusBadRequest, errors.Wrap(err, "Error in converting id to primitive.ObjectID"))
+		ctx.JSON(http.StatusBadRequest, res)
+	}
+
+	// Bind json
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		res := utils.NewHttpResponse(http.StatusBadRequest, errors.Wrap(err, "Request body is not valid"))
+		ctx.JSON(http.StatusBadRequest, res)
+	}
+
+	user := &models.User{
+		Email:     req.Email,
+		FirstName: req.FirstName,
+		LastName:  req.LastName,
+	}
+
+	// update in mongodb
+	if err = us.UserController.UpdateUser(userID, user); err != nil {
+		res := utils.NewHttpResponse(http.StatusBadRequest, errors.Wrap(err, "Error in updating user in mongodb"))
+		ctx.JSON(http.StatusBadRequest, res)
+	}
+
+	if updatedUser, err = us.UserController.GetUserByID(userID); err != nil {
+		res := utils.NewHttpResponse(http.StatusBadRequest, errors.Wrap(err, "Error in getting updateduser from mongodb"))
+		ctx.JSON(http.StatusBadRequest, res)
+	}
+
+	res := utils.NewHttpResponse(http.StatusOK, updatedUser)
 	ctx.JSON(http.StatusOK, res)
 }
