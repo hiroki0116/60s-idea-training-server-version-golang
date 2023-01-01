@@ -2,7 +2,6 @@ package firebase
 
 import (
 	"context"
-	"idea-training-version-go/internals/models"
 	"log"
 	"os"
 
@@ -61,22 +60,6 @@ func GetUserInFirebase(email string) (*auth.UserRecord, error) {
 	u, err := client.GetUserByEmail(ctx, email)
 	if err != nil {
 		return nil, errors.Wrap(err, "Error getting user in firebase")
-	}
-	return u, nil
-}
-
-func UpdateUserInFirebase(user *models.User) (*auth.UserRecord, error) {
-	params := (&auth.UserToUpdate{}).
-		Email(user.Email).
-		DisplayName(user.FirstName + " " + user.LastName).
-		Disabled(false)
-	existingUser, err := GetUserInFirebase(user.Email)
-	if err != nil {
-		return nil, errors.Wrap(err, "Error getting user in firebase")
-	}
-	u, err := client.UpdateUser(ctx, existingUser.UID, params)
-	if err != nil {
-		return nil, errors.Wrap(err, "Error updating user in firebase")
 	}
 	return u, nil
 }

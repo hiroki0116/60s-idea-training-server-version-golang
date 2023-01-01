@@ -20,4 +20,5 @@ func (ur *UserRoutes) UserRoutes(rg *gin.RouterGroup) {
 	userroute := rg.Group("/users")
 
 	userroute.POST("/signup", ur.UserService.SignUp)
+	userroute.PUT("/update/:id", ur.UserService.UpdateUser)
 }
