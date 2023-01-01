@@ -10,8 +10,8 @@ type UserRoutes struct {
 	UserService services.IUserService
 }
 
-func NewUserRoutes(userService services.IUserService) *UserRoutes {
-	return &UserRoutes{
+func NewUserRoutes(userService services.IUserService) UserRoutes {
+	return UserRoutes{
 		UserService: userService,
 	}
 }

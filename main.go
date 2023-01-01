@@ -38,7 +38,7 @@ func init() {
 	usercollection = db.MongoDB.Database("60s-idea-training").Collection("users")
 	usercontroller = controllers.NewUserController(usercollection, ctx)
 	userservice = services.NewUserService(usercontroller)
-	userroute = *routes.NewUserRoutes(userservice)
+	userroute = routes.NewUserRoutes(userservice)
 	server = gin.Default()
 }
 

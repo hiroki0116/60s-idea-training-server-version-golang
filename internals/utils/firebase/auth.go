@@ -10,6 +10,7 @@ import (
 	"firebase.google.com/go/auth"
 	"github.com/joho/godotenv"
 	errors "github.com/pkg/errors"
+	"google.golang.org/api/iterator"
 	"google.golang.org/api/option"
 )
 
@@ -21,7 +22,12 @@ var (
 func init() {
 	// Get an auth client from the firebase app.
 	ctx = context.Background()
-	if os.Getenv("STAGE") != "production" {
+	if os.Getenv("STAGE") == "test" {
+		if err := godotenv.Load(".env.test"); err != nil {
+			errors.Wrap(err, "Error loading .env.test file")
+		}
+	} else if os.Getenv("STAGE") == "production" {
+	} else {
 		if err := godotenv.Load(); err != nil {
 			errors.Wrap(err, "Error loading .env file")
 		}
@@ -79,6 +85,22 @@ func DeleteUserInFirebase(uid string) error {
 	err := client.DeleteUser(ctx, uid)
 	if err != nil {
 		return errors.Wrap(err, "Error deleting user in firebase")
+	}
+	return nil
+}
+
+func DeleteAllUsersInFirebase() error {
+	iter := client.Users(ctx, "")
+	for {
+		user, err := iter.Next()
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			log.Fatalf("error listing fireabase users")
+			return err
+		}
+		client.DeleteUser(ctx, user.UID)
 	}
 	return nil
 }
