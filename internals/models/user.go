@@ -29,10 +29,23 @@ type Image struct {
 }
 
 func (u *User) MarshalBSON() ([]byte, error) {
+
+	// deal with time stamps
 	if u.CreatedAt.IsZero() {
 		u.CreatedAt = time.Now()
 	}
 	u.UpdatedAt = time.Now()
+
+	// deal with default role
+	u.Role = DEFAULT_USER_ROLE
+
+	// deal with default image
+	if len(u.Images) == 0 {
+		u.Images = append(u.Images, Image{
+			About: "default",
+			Url:   DEFAULT_USER_IMAGE,
+		})
+	}
 
 	type custom User
 	return bson.Marshal((*custom)(u))
