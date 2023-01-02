@@ -20,10 +20,14 @@ import (
 var (
 	server         *gin.Engine
 	usercollection *mongo.Collection
+	ideacollection *mongo.Collection
 	usercontroller controllers.IUserController
+	ideacontroller controllers.IIdeaController
 	userservice    services.IUserService
+	ideaservice    services.IIdeaService
 	requireauth    middleware.RequireAuth
 	userroute      routes.UserRoutes
+	idearoute      routes.IdeaRoutes
 	ctx            context.Context
 	err            error
 )
@@ -38,10 +42,14 @@ func init() {
 	// Connect to MongoDB
 	db.ConnectDB(os.Getenv("MONGO_URI"))
 	usercollection = db.MongoDB.Database("60s-idea-training").Collection("users")
+	ideacollection = db.MongoDB.Database("60s-idea-training").Collection("idearecords")
 	usercontroller = controllers.NewUserController(usercollection, ctx)
+	ideacontroller = controllers.NewIdeaController(ideacollection, ctx)
 	userservice = services.NewUserService(usercontroller)
+	ideaservice = services.NewIdeaService(ideacontroller)
 	requireauth = middleware.NewRequireAuth(usercontroller)
 	userroute = routes.NewUserRoutes(userservice, requireauth)
+	idearoute = routes.NewIdeaRoutes(ideaservice, requireauth)
 	server = gin.Default()
 }
 
@@ -49,5 +57,6 @@ func main() {
 	defer db.MongoDB.Disconnect(ctx)
 	basepath := server.Group("/api")
 	userroute.UserRoutes(basepath)
+	idearoute.IdeaRoutes(basepath)
 	log.Fatalln(server.Run(":" + os.Getenv("PORT")))
 }

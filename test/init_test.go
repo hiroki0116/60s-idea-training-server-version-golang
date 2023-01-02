@@ -21,10 +21,14 @@ import (
 var (
 	server         *gin.Engine
 	usercollection *mongo.Collection
+	ideacollection *mongo.Collection
 	usercontroller controllers.IUserController
+	ideacontroller controllers.IIdeaController
 	userservice    services.IUserService
+	ideaservice    services.IIdeaService
 	requireauth    middleware.RequireAuth
 	userroute      routes.UserRoutes
+	idearoute      routes.IdeaRoutes
 	ctx            context.Context
 )
 
@@ -39,14 +43,18 @@ func init() {
 	db.ConnectDB("MONGO_URI")
 	// collections
 	usercollection = db.MongoDB.Database("60s-idea-training").Collection("users")
+	ideacollection = db.MongoDB.Database("60s-idea-training").Collection("idearecords")
 	// controllers
 	usercontroller = controllers.NewUserController(usercollection, ctx)
+	ideacontroller = controllers.NewIdeaController(ideacollection, ctx)
 	// services
 	userservice = services.NewUserService(usercontroller)
+	ideaservice = services.NewIdeaService(ideacontroller)
 	// middleware
 	requireauth = middleware.NewRequireAuth(usercontroller)
 	// routes
 	userroute = routes.NewUserRoutes(userservice, requireauth)
+	idearoute = routes.NewIdeaRoutes(ideaservice, requireauth)
 	// server
 	server = gin.Default()
 }
@@ -56,6 +64,7 @@ func TestMain(m *testing.M) {
 	// set endpoints
 	basepath := server.Group("/api")
 	userroute.UserRoutes(basepath)
+	idearoute.IdeaRoutes(basepath)
 	unitTest.SetRouter(server)
 
 	log.Println("Populating sample data in the beginning!")
