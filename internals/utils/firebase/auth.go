@@ -2,7 +2,6 @@ package firebase
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"os"
 
@@ -38,7 +37,6 @@ func init() {
 		log.Fatalln("Error initializing firebase app", err)
 	}
 	client, err = app.Auth(ctx)
-	fmt.Println(client)
 	if err != nil {
 		errors.Wrap(err, "Error getting firebase auth client")
 	}
