@@ -2,7 +2,6 @@ package firebase
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"os"
 
@@ -34,12 +33,10 @@ func init() {
 	}
 	opt := option.WithCredentialsJSON([]byte(os.Getenv("FIREBASE_CRED")))
 	app, err := firebase.NewApp(ctx, nil, opt)
-	fmt.Println(app)
 	if err != nil {
 		log.Fatalln("Error initializing firebase app", err)
 	}
 	client, err = app.Auth(ctx)
-	fmt.Println(client)
 	if err != nil {
 		errors.Wrap(err, "Error getting firebase auth client")
 	}
