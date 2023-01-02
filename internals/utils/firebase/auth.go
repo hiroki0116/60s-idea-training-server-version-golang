@@ -33,8 +33,8 @@ func init() {
 		}
 	}
 	opt := option.WithCredentialsJSON([]byte(os.Getenv("FIREBASE_CRED")))
-	fmt.Println(opt)
 	app, err := firebase.NewApp(ctx, nil, opt)
+	fmt.Println(app)
 	if err != nil {
 		log.Fatalln("Error initializing firebase app", err)
 	}
