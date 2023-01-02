@@ -2,7 +2,6 @@ package firebase
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"os"
 
@@ -15,12 +14,12 @@ import (
 )
 
 var (
-	client *auth.Client
+	Client *auth.Client
 	ctx    context.Context
 )
 
 func init() {
-	// Get an auth client from the firebase app.
+	// Get an auth Client from the firebase app.
 	ctx = context.Background()
 	if os.Getenv("STAGE") == "test" {
 		if err := godotenv.Load(".env.test"); err != nil {
@@ -37,10 +36,9 @@ func init() {
 	if err != nil {
 		log.Fatalln("Error initializing firebase app", err)
 	}
-	client, err = app.Auth(ctx)
-	fmt.Println(client)
+	Client, err = app.Auth(ctx)
 	if err != nil {
-		errors.Wrap(err, "Error getting firebase auth client")
+		errors.Wrap(err, "Error getting firebase auth Client")
 	}
 }
 
@@ -51,7 +49,7 @@ func CreateUserInFirebase(email, password, firstName, lastName string) (string, 
 		DisplayName(firstName + " " + lastName).
 		Disabled(false)
 
-	u, err := client.CreateUser(ctx, params)
+	u, err := Client.CreateUser(ctx, params)
 	if err != nil {
 		return "", errors.Wrap(err, "Error creating user in firebase")
 	}
@@ -59,7 +57,7 @@ func CreateUserInFirebase(email, password, firstName, lastName string) (string, 
 }
 
 func GetUserInFirebase(email string) (*auth.UserRecord, error) {
-	u, err := client.GetUserByEmail(ctx, email)
+	u, err := Client.GetUserByEmail(ctx, email)
 	if err != nil {
 		return nil, errors.Wrap(err, "Error getting user in firebase")
 	}
@@ -67,7 +65,7 @@ func GetUserInFirebase(email string) (*auth.UserRecord, error) {
 }
 
 func DeleteUserInFirebase(uid string) error {
-	err := client.DeleteUser(ctx, uid)
+	err := Client.DeleteUser(ctx, uid)
 	if err != nil {
 		return errors.Wrap(err, "Error deleting user in firebase")
 	}
@@ -75,7 +73,7 @@ func DeleteUserInFirebase(uid string) error {
 }
 
 func DeleteAllUsersInFirebase() error {
-	iter := client.Users(ctx, "")
+	iter := Client.Users(ctx, "")
 	for {
 		user, err := iter.Next()
 		if err == iterator.Done {
@@ -85,7 +83,7 @@ func DeleteAllUsersInFirebase() error {
 			log.Fatalf("error listing fireabase users")
 			return err
 		}
-		client.DeleteUser(ctx, user.UID)
+		Client.DeleteUser(ctx, user.UID)
 	}
 	return nil
 }

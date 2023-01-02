@@ -9,12 +9,13 @@ import (
 	unitTest "github.com/Valiben/gin_unit_test"
 	"github.com/Valiben/gin_unit_test/utils"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-func getSampleUsers() []*models.User {
+func getSampleUser() *models.User {
 	// get one test user id
 	var users []*models.User
-	cursor, err := usercollection.Find(ctx, bson.D{{}})
+	cursor, err := usercollection.Find(ctx, bson.D{{}}, options.Find().SetLimit(1))
 	if err != nil {
 		log.Fatal("Error getting sample users: ", err)
 		return nil
@@ -29,7 +30,7 @@ func getSampleUsers() []*models.User {
 		}
 		users = append(users, user)
 	}
-	return users
+	return users[0]
 }
 
 func TestSignup(t *testing.T) {
@@ -95,8 +96,14 @@ func TestUpdateUser(t *testing.T) {
 		LastName:  "updated_test_last_name_11",
 	}
 
-	users := getSampleUsers()
-	if err := unitTest.TestHandlerUnMarshalResp(utils.PUT, fmt.Sprintf("/api/users/update/%v", users[0].ID.Hex()), "json", params, &res); err != nil {
+	user := getSampleUser()
+	tokenString, err := GenerateJWTToken(user.Email)
+	if err != nil {
+		log.Fatal("Error in generating JWT token: ", err)
+		return
+	}
+	unitTest.AddHeader("Authorization", fmt.Sprintf("Bearer %s", tokenString))
+	if err := unitTest.TestHandlerUnMarshalResp(utils.PUT, fmt.Sprintf("/api/users/update/%v", user.ID.Hex()), "json", params, &res); err != nil {
 		t.Errorf("TestUpdateUser: %v/n", err)
 		return
 	}
