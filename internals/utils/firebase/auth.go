@@ -2,6 +2,7 @@ package firebase
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"os"
 
@@ -26,6 +27,7 @@ func init() {
 			errors.Wrap(err, "Error loading .env.test file")
 		}
 	} else if os.Getenv("STAGE") == "production" {
+		fmt.Println("Fuck offfff")
 	} else {
 		if err := godotenv.Load(); err != nil {
 			errors.Wrap(err, "Error loading .env file")
@@ -37,6 +39,7 @@ func init() {
 		log.Fatalln("Error initializing firebase app", err)
 	}
 	client, err = app.Auth(ctx)
+	fmt.Println(client)
 	if err != nil {
 		errors.Wrap(err, "Error getting firebase auth client")
 	}
