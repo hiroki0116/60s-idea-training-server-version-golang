@@ -4,6 +4,7 @@ import (
 	"context"
 	"idea-training-version-go/internals/controllers"
 	"idea-training-version-go/internals/db"
+	"idea-training-version-go/internals/middleware"
 	"idea-training-version-go/internals/routes"
 	"idea-training-version-go/internals/services"
 	"idea-training-version-go/internals/utils/firebase"
@@ -22,6 +23,7 @@ var (
 	usercollection *mongo.Collection
 	usercontroller controllers.IUserController
 	userservice    services.IUserService
+	requireauth    middleware.RequireAuth
 	userroute      routes.UserRoutes
 	ctx            context.Context
 )
@@ -41,8 +43,10 @@ func init() {
 	usercontroller = controllers.NewUserController(usercollection, ctx)
 	// services
 	userservice = services.NewUserService(usercontroller)
+	// middleware
+	requireauth = middleware.NewRequireAuth(usercontroller)
 	// routes
-	userroute = routes.NewUserRoutes(userservice)
+	userroute = routes.NewUserRoutes(userservice, requireauth)
 	// server
 	server = gin.Default()
 }

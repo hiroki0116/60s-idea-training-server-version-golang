@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"idea-training-version-go/internals/middleware"
 	"idea-training-version-go/internals/services"
 
 	"github.com/gin-gonic/gin"
@@ -8,11 +9,13 @@ import (
 
 type UserRoutes struct {
 	UserService services.IUserService
+	RequireAuth middleware.RequireAuth
 }
 
-func NewUserRoutes(userService services.IUserService) UserRoutes {
+func NewUserRoutes(userService services.IUserService, requireAuth middleware.RequireAuth) UserRoutes {
 	return UserRoutes{
 		UserService: userService,
+		RequireAuth: requireAuth,
 	}
 }
 
@@ -20,5 +23,5 @@ func (ur *UserRoutes) UserRoutes(rg *gin.RouterGroup) {
 	userroute := rg.Group("/users")
 
 	userroute.POST("/signup", ur.UserService.SignUp)
-	userroute.PUT("/update/:id", ur.UserService.UpdateUser)
+	userroute.PUT("/update/:id", ur.RequireAuth.AllowIfLogIn, ur.UserService.UpdateUser)
 }

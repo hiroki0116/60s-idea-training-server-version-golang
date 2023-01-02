@@ -6,7 +6,10 @@ import (
 	"idea-training-version-go/internals/models"
 	"idea-training-version-go/internals/utils/firebase"
 	"log"
+	"os"
+	"time"
 
+	"github.com/golang-jwt/jwt"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 )
@@ -59,4 +62,18 @@ func DeleteSampleData(mongo *mongo.Collection, ctx context.Context) error {
 		return err
 	}
 	return nil
+}
+
+func GenerateJWTToken(email string) (string, error) {
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"email": email,
+		"exp":   time.Now().Add(time.Hour * 24 * 30).Unix(),
+	})
+
+	// Sign and get the complete encoded token as a string using the secret
+	tokenString, err := token.SignedString([]byte(os.Getenv("JWT_SECRET")))
+	if err != nil {
+		return "", err
+	}
+	return tokenString, nil
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 	"idea-training-version-go/internals/controllers"
 	"idea-training-version-go/internals/db"
+	"idea-training-version-go/internals/middleware"
 	"idea-training-version-go/internals/routes"
 	"idea-training-version-go/internals/services"
 	"log"
@@ -21,6 +22,7 @@ var (
 	usercollection *mongo.Collection
 	usercontroller controllers.IUserController
 	userservice    services.IUserService
+	requireauth    middleware.RequireAuth
 	userroute      routes.UserRoutes
 	ctx            context.Context
 	err            error
@@ -38,7 +40,8 @@ func init() {
 	usercollection = db.MongoDB.Database("60s-idea-training").Collection("users")
 	usercontroller = controllers.NewUserController(usercollection, ctx)
 	userservice = services.NewUserService(usercontroller)
-	userroute = routes.NewUserRoutes(userservice)
+	requireauth = middleware.NewRequireAuth(usercontroller)
+	userroute = routes.NewUserRoutes(userservice, requireauth)
 	server = gin.Default()
 }
 
