@@ -27,13 +27,13 @@ func init() {
 			errors.Wrap(err, "Error loading .env.test file")
 		}
 	} else if os.Getenv("STAGE") == "production" {
-		fmt.Println("Fuck offfff")
 	} else {
 		if err := godotenv.Load(); err != nil {
 			errors.Wrap(err, "Error loading .env file")
 		}
 	}
 	opt := option.WithCredentialsJSON([]byte(os.Getenv("FIREBASE_CRED")))
+	fmt.Println(opt)
 	app, err := firebase.NewApp(ctx, nil, opt)
 	if err != nil {
 		log.Fatalln("Error initializing firebase app", err)
