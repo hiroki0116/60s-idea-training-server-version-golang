@@ -260,7 +260,7 @@ func TestDeleteIdea(t *testing.T) {
 	t.Log("passed")
 }
 
-func GetTotalIdeasOfToday(t *testing.T) {
+func TestGetTotalIdeasOfToday(t *testing.T) {
 	type HTTPResponse struct {
 		StatusCode int           `json:"status"`
 		Success    bool          `json:"success"`
@@ -274,13 +274,40 @@ func GetTotalIdeasOfToday(t *testing.T) {
 		return
 	}
 
-	if err := unitTest.TestHandlerUnMarshalResp(utils.DELETE, "/api/ideas/total-today", "json", nil, &res); err != nil {
+	if err := unitTest.TestHandlerUnMarshalResp(utils.GET, "/api/ideas/total/today", "json", nil, &res); err != nil {
 		t.Errorf("TestGetTotalIdeasOfToday: %v\n", err)
 		return
 	}
 
 	if !res.Success {
 		t.Errorf("TestGetTotalIdeasOfToday: %v\n", res.Success)
+		return
+	}
+
+	t.Log("passed")
+}
+
+func TestGetTotalIdeasOfAllTime(t *testing.T) {
+	type HTTPResponse struct {
+		StatusCode int           `json:"status"`
+		Success    bool          `json:"success"`
+		Message    string        `json:"message"`
+		Data       []primitive.M `json:"data"`
+	}
+	var res HTTPResponse
+
+	if _, err := AddAuthHeader(); err != nil {
+		t.Errorf("TestGetTotalIdeasOfAllTime: Fails to add auth header %v\n", err)
+		return
+	}
+
+	if err := unitTest.TestHandlerUnMarshalResp(utils.GET, "/api/ideas/total/all", "json", nil, &res); err != nil {
+		t.Errorf("TestGetTotalIdeasOfAllTime: %v\n", err)
+		return
+	}
+
+	if !res.Success {
+		t.Errorf("TestGetTotalIdeasOfAllTime: %v\n", res.Success)
 		return
 	}
 
