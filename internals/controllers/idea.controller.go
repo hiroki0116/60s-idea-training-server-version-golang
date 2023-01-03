@@ -21,6 +21,7 @@ type IIdeaController interface {
 	GetAllIdeas(userID primitive.ObjectID) ([]*models.Idea, error)
 	GetIdeaByID(ideaID primitive.ObjectID) (*models.Idea, error)
 	UpdateIdea(idea *models.Idea) error
+	DeleteIdea(ideaID primitive.ObjectID) error
 }
 
 func NewIdeaController(ideacollection *mongo.Collection, ctx context.Context) IIdeaController {
@@ -98,5 +99,17 @@ func (ic *IdeaController) UpdateIdea(idea *models.Idea) error {
 	}
 
 	_, err := ic.ideacollection.UpdateOne(ic.ctx, filter, bson.M{"$set": idea})
+	return err
+}
+
+func (ic *IdeaController) DeleteIdea(ideaID primitive.ObjectID) error {
+	filter := bson.D{
+		bson.E{
+			Key:   "_id",
+			Value: ideaID,
+		},
+	}
+
+	_, err := ic.ideacollection.DeleteOne(ic.ctx, filter)
 	return err
 }

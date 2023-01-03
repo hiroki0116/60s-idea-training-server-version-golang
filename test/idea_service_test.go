@@ -219,3 +219,42 @@ func TestUpdateIdea(t *testing.T) {
 	t.Log("passed")
 
 }
+
+func TestDeleteIdea(t *testing.T) {
+	type HTTPResponse struct {
+		StatusCode int    `json:"status"`
+		Success    bool   `json:"success"`
+		Message    string `json:"message"`
+		Data       string `json:"data"`
+	}
+
+	var res HTTPResponse
+
+	if _, err := AddAuthHeader(); err != nil {
+		t.Errorf("TestCreateIdea: Fails to add auth header %v\n", err)
+		return
+	}
+
+	idea, err := getSampleIdea()
+	if err != nil {
+		t.Errorf("TestGetIdeaByID: Failed to get sample idea data...%v\n", err)
+		return
+	}
+
+	if err := unitTest.TestHandlerUnMarshalResp(utils.DELETE, fmt.Sprintf("/api/ideas/%v", idea.ID.Hex()), "json", nil, &res); err != nil {
+		t.Errorf("TestGetIdeaByID: %v\n", err)
+		return
+	}
+
+	if !res.Success {
+		t.Errorf("TestGetIdeaByID: %v\n", res.Success)
+		return
+	}
+
+	if res.Data != "Idea deleted successfully" {
+		t.Errorf("TestGetIdeaByID: expected message %v, got %v\n", "Idea deleted successfully", res.Data)
+		return
+	}
+
+	t.Log("passed")
+}

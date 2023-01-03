@@ -26,4 +26,5 @@ func (ir *IdeaRoutes) IdeaRoutes(rg *gin.RouterGroup) {
 	idearoute.GET("/", ir.RequireAuth.AllowIfLogIn, ir.IdeaService.GetAllIdeas)
 	idearoute.GET("/:id", ir.RequireAuth.AllowIfLogIn, ir.IdeaService.GetIdeaByID)
 	idearoute.PUT("/:id", ir.RequireAuth.AllowIfLogIn, ir.IdeaService.UpdateIdea)
+	idearoute.DELETE("/:id", ir.RequireAuth.AllowIfLogIn, ir.IdeaService.DeleteIdea)
 }

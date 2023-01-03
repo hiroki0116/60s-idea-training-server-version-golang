@@ -16,6 +16,7 @@ type IIdeaService interface {
 	GetAllIdeas(ctx *gin.Context)
 	GetIdeaByID(ctx *gin.Context)
 	UpdateIdea(ctx *gin.Context)
+	DeleteIdea(ctx *gin.Context)
 }
 
 type IdeaService struct {
@@ -112,5 +113,23 @@ func (is *IdeaService) UpdateIdea(ctx *gin.Context) {
 	}
 
 	res := utils.NewHttpResponse(http.StatusOK, updatedIdea)
+	ctx.JSON(http.StatusOK, res)
+}
+
+func (is *IdeaService) DeleteIdea(ctx *gin.Context) {
+	id := ctx.Param("id")
+	ideaID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		res := utils.NewHttpResponse(http.StatusBadRequest, errors.Wrap(err, "Invalid idea id"))
+		ctx.JSON(http.StatusBadRequest, res)
+		return
+	}
+	if err := is.IdeaController.DeleteIdea(ideaID); err != nil {
+		res := utils.NewHttpResponse(http.StatusBadRequest, errors.Wrap(err, "Error in deleting idea"))
+		ctx.JSON(http.StatusBadRequest, res)
+		return
+	}
+
+	res := utils.NewHttpResponse(http.StatusOK, "Idea deleted successfully")
 	ctx.JSON(http.StatusOK, res)
 }
