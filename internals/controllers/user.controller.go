@@ -79,27 +79,7 @@ func (uc *UserController) UpdateUser(id primitive.ObjectID, user *models.User) e
 		},
 	}
 
-	update := bson.D{
-		bson.E{
-			Key: "$set",
-			Value: bson.D{
-				bson.E{
-					Key:   "firstName",
-					Value: user.FirstName,
-				},
-				bson.E{
-					Key:   "lastName",
-					Value: user.LastName,
-				},
-				bson.E{
-					Key:   "email",
-					Value: user.Email,
-				},
-			},
-		},
-	}
-
-	if result, _ := uc.usercollection.UpdateOne(uc.ctx, filter, update); result.MatchedCount != 1 {
+	if result, _ := uc.usercollection.UpdateOne(uc.ctx, filter, bson.M{"$set": user}); result.MatchedCount != 1 {
 		return errors.New("failed to update user. User not found")
 	}
 	return nil
