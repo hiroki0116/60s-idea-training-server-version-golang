@@ -9,34 +9,27 @@ import (
 	unitTest "github.com/Valiben/gin_unit_test"
 	"github.com/Valiben/gin_unit_test/utils"
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 func AddAuthHeader() (*models.User, error) {
 	// get one test user id
-	var users []*models.User
-	cursor, err := usercollection.Find(ctx, bson.D{{}}, options.Find().SetLimit(1))
-	if err != nil {
-		log.Fatal("Error getting sample users: ", err)
+	var user models.User
+	filter := bson.D{
+		bson.E{
+			Key:   "email",
+			Value: "test_email100@test.com",
+		},
+	}
+	if err := usercollection.FindOne(ctx, filter).Decode(&user); err != nil {
 		return nil, err
 	}
-
-	for cursor.Next(ctx) {
-		var user *models.User
-		err := cursor.Decode(&user)
-		if err != nil {
-			log.Fatal("Error decoding sample users: ", err)
-			return nil, err
-		}
-		users = append(users, user)
-	}
-	tokenString, err := GenerateJWTToken(users[0].Email)
+	tokenString, err := GenerateJWTToken(user.Email)
 	if err != nil {
 		log.Fatal("Error in generating JWT token: ", err)
 		return nil, err
 	}
 	unitTest.AddHeader("Authorization", fmt.Sprintf("Bearer %s", tokenString))
-	return users[0], nil
+	return &user, nil
 }
 
 func TestSignup(t *testing.T) {

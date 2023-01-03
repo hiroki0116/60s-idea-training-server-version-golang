@@ -20,6 +20,7 @@ type IIdeaService interface {
 	GetTotalIdeasOfToday(ctx *gin.Context)
 	GetTotalIdeasOfAllTime(ctx *gin.Context)
 	GetTotalConsecutiveDays(ctx *gin.Context)
+	GetRecentIdeas(ctx *gin.Context)
 }
 
 type IdeaService struct {
@@ -170,6 +171,19 @@ func (is *IdeaService) GetTotalConsecutiveDays(ctx *gin.Context) {
 	result, err := is.IdeaController.GetTotalConsecutiveDays(userID)
 	if err != nil {
 		res := utils.NewHttpResponse(http.StatusBadRequest, errors.Wrap(err, "Error in getting total consecutive days"))
+		ctx.JSON(http.StatusBadRequest, res)
+		return
+	}
+	res := utils.NewHttpResponse(http.StatusOK, result)
+	ctx.JSON(http.StatusOK, res)
+}
+
+func (is *IdeaService) GetRecentIdeas(ctx *gin.Context) {
+	userID := utils.FetchUserFromCtx(ctx)
+
+	result, err := is.IdeaController.GetRecentIdeas(userID)
+	if err != nil {
+		res := utils.NewHttpResponse(http.StatusBadRequest, errors.Wrap(err, "Error in getting total ideas of 5 recent ideas"))
 		ctx.JSON(http.StatusBadRequest, res)
 		return
 	}

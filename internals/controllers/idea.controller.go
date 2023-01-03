@@ -9,6 +9,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type IdeaController struct {
@@ -25,6 +26,7 @@ type IIdeaController interface {
 	GetTotalIdeasOfToday(userID primitive.ObjectID) ([]bson.M, error)
 	GetTotalIdeasOfAllTime(userID primitive.ObjectID) ([]bson.M, error)
 	GetTotalConsecutiveDays(userID primitive.ObjectID) (int, error)
+	GetRecentIdeas(userID primitive.ObjectID) ([]*models.Idea, error)
 }
 
 func NewIdeaController(ideacollection *mongo.Collection, ctx context.Context) IIdeaController {
@@ -304,4 +306,33 @@ func (ic *IdeaController) GetTotalConsecutiveDays(userID primitive.ObjectID) (in
 	}
 
 	return consecutiveDays, nil
+}
+
+func (ic *IdeaController) GetRecentIdeas(userID primitive.ObjectID) ([]*models.Idea, error) {
+	var ideas []*models.Idea
+
+	query := bson.D{
+		bson.E{
+			Key:   "createdBy",
+			Value: userID,
+		},
+	}
+
+	opts := options.Find().SetLimit(5)
+
+	count, _ := ic.ideacollection.CountDocuments(ic.ctx, query)
+	if count == 0 {
+		// return empty array if no tasks found
+		return []*models.Idea{}, nil
+	}
+
+	cursor, err := ic.ideacollection.Find(ic.ctx, query, opts)
+	if err != nil {
+		return nil, err
+	}
+	if err = cursor.All(ic.ctx, &ideas); err != nil {
+		return nil, err
+	}
+
+	return ideas, nil
 }
