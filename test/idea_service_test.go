@@ -8,6 +8,7 @@ import (
 	unitTest "github.com/Valiben/gin_unit_test"
 	"github.com/Valiben/gin_unit_test/utils"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
@@ -253,6 +254,33 @@ func TestDeleteIdea(t *testing.T) {
 
 	if res.Data != "Idea deleted successfully" {
 		t.Errorf("TestGetIdeaByID: expected message %v, got %v\n", "Idea deleted successfully", res.Data)
+		return
+	}
+
+	t.Log("passed")
+}
+
+func GetTotalIdeasOfToday(t *testing.T) {
+	type HTTPResponse struct {
+		StatusCode int           `json:"status"`
+		Success    bool          `json:"success"`
+		Message    string        `json:"message"`
+		Data       []primitive.M `json:"data"`
+	}
+	var res HTTPResponse
+
+	if _, err := AddAuthHeader(); err != nil {
+		t.Errorf("TestGetTotalIdeasOfToday: Fails to add auth header %v\n", err)
+		return
+	}
+
+	if err := unitTest.TestHandlerUnMarshalResp(utils.DELETE, "/api/ideas/total-today", "json", nil, &res); err != nil {
+		t.Errorf("TestGetTotalIdeasOfToday: %v\n", err)
+		return
+	}
+
+	if !res.Success {
+		t.Errorf("TestGetTotalIdeasOfToday: %v\n", res.Success)
 		return
 	}
 
