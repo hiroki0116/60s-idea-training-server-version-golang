@@ -23,6 +23,7 @@ type IIdeaController interface {
 	UpdateIdea(idea *models.Idea) error
 	DeleteIdea(ideaID primitive.ObjectID) error
 	GetTotalIdeasOfToday(userID primitive.ObjectID) ([]bson.M, error)
+	GetTotalIdeasOfAllTime(userID primitive.ObjectID) ([]bson.M, error)
 }
 
 func NewIdeaController(ideacollection *mongo.Collection, ctx context.Context) IIdeaController {
@@ -136,6 +137,68 @@ func (ic *IdeaController) GetTotalIdeasOfToday(userID primitive.ObjectID) ([]bso
 							Value: today,
 						},
 					},
+				},
+			},
+		},
+	}
+
+	projectgStage := bson.D{
+		bson.E{
+			Key: "$group",
+			Value: bson.D{
+				bson.E{
+					Key:   "_id",
+					Value: nil,
+				},
+				bson.E{
+					Key: "totalIdeas",
+					Value: bson.D{
+						bson.E{
+							Key: "$sum",
+							Value: bson.D{
+								bson.E{
+									Key:   "$size",
+									Value: "$ideas",
+								},
+							},
+						},
+					},
+				},
+				bson.E{
+					Key: "totalSessions",
+					Value: bson.D{
+						bson.E{
+							Key:   "$sum",
+							Value: 1,
+						},
+					},
+				},
+			},
+		},
+	}
+
+	cursor, err := ic.ideacollection.Aggregate(ic.ctx, mongo.Pipeline{matchStage, projectgStage})
+	if err != nil {
+		return nil, err
+	}
+
+	// display the results
+	var results []bson.M
+	if err = cursor.All(context.TODO(), &results); err != nil {
+		return results, err
+	}
+
+	return results, nil
+}
+
+func (ic *IdeaController) GetTotalIdeasOfAllTime(userID primitive.ObjectID) ([]bson.M, error) {
+	matchStage := bson.D{
+		bson.E{
+			Key: "$match",
+			Value: bson.D{
+				bson.E{
+					Key:   "createdBy",
+					Value: userID,
 				},
 			},
 		},

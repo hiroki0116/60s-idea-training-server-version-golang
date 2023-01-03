@@ -18,6 +18,7 @@ type IIdeaService interface {
 	UpdateIdea(ctx *gin.Context)
 	DeleteIdea(ctx *gin.Context)
 	GetTotalIdeasOfToday(ctx *gin.Context)
+	GetTotalIdeasOfAllTime(ctx *gin.Context)
 }
 
 type IdeaService struct {
@@ -138,13 +139,26 @@ func (is *IdeaService) DeleteIdea(ctx *gin.Context) {
 func (is *IdeaService) GetTotalIdeasOfToday(ctx *gin.Context) {
 	userID := utils.FetchUserFromCtx(ctx)
 
-	ideas, err := is.IdeaController.GetTotalIdeasOfToday(userID)
+	result, err := is.IdeaController.GetTotalIdeasOfToday(userID)
 
 	if err != nil {
 		res := utils.NewHttpResponse(http.StatusBadRequest, errors.Wrap(err, "Error in getting ideas"))
 		ctx.JSON(http.StatusBadRequest, res)
 		return
 	}
-	res := utils.NewHttpResponse(http.StatusOK, ideas)
+	res := utils.NewHttpResponse(http.StatusOK, result)
+	ctx.JSON(http.StatusOK, res)
+}
+
+func (is *IdeaService) GetTotalIdeasOfAllTime(ctx *gin.Context) {
+	userID := utils.FetchUserFromCtx(ctx)
+
+	result, err := is.IdeaController.GetTotalIdeasOfAllTime(userID)
+	if err != nil {
+		res := utils.NewHttpResponse(http.StatusBadRequest, errors.Wrap(err, "Error in getting ideas of all time"))
+		ctx.JSON(http.StatusBadRequest, res)
+		return
+	}
+	res := utils.NewHttpResponse(http.StatusOK, result)
 	ctx.JSON(http.StatusOK, res)
 }
