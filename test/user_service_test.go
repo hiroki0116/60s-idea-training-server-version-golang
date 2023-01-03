@@ -12,13 +12,13 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-func getSampleUser() *models.User {
+func AddAuthHeader() (*models.User, error) {
 	// get one test user id
 	var users []*models.User
 	cursor, err := usercollection.Find(ctx, bson.D{{}}, options.Find().SetLimit(1))
 	if err != nil {
 		log.Fatal("Error getting sample users: ", err)
-		return nil
+		return nil, err
 	}
 
 	for cursor.Next(ctx) {
@@ -26,11 +26,17 @@ func getSampleUser() *models.User {
 		err := cursor.Decode(&user)
 		if err != nil {
 			log.Fatal("Error decoding sample users: ", err)
-			return nil
+			return nil, err
 		}
 		users = append(users, user)
 	}
-	return users[0]
+	tokenString, err := GenerateJWTToken(users[0].Email)
+	if err != nil {
+		log.Fatal("Error in generating JWT token: ", err)
+		return nil, err
+	}
+	unitTest.AddHeader("Authorization", fmt.Sprintf("Bearer %s", tokenString))
+	return users[0], nil
 }
 
 func TestSignup(t *testing.T) {
@@ -96,13 +102,12 @@ func TestUpdateUser(t *testing.T) {
 		LastName:  "updated_test_last_name_11",
 	}
 
-	user := getSampleUser()
-	tokenString, err := GenerateJWTToken(user.Email)
+	user, err := AddAuthHeader()
 	if err != nil {
-		log.Fatal("Error in generating JWT token: ", err)
+		t.Errorf("TestUpdateUser: %v/n", err)
 		return
 	}
-	unitTest.AddHeader("Authorization", fmt.Sprintf("Bearer %s", tokenString))
+
 	if err := unitTest.TestHandlerUnMarshalResp(utils.PUT, fmt.Sprintf("/api/users/update/%v", user.ID.Hex()), "json", params, &res); err != nil {
 		t.Errorf("TestUpdateUser: %v/n", err)
 		return
