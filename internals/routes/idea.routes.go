@@ -29,4 +29,5 @@ func (ir *IdeaRoutes) IdeaRoutes(rg *gin.RouterGroup) {
 	idearoute.DELETE("/:id", ir.RequireAuth.AllowIfLogIn, ir.IdeaService.DeleteIdea)
 	idearoute.GET("/total/today", ir.RequireAuth.AllowIfLogIn, ir.IdeaService.GetTotalIdeasOfToday)
 	idearoute.GET("/total/all", ir.RequireAuth.AllowIfLogIn, ir.IdeaService.GetTotalIdeasOfAllTime)
+	idearoute.GET("/total/consecutive", ir.RequireAuth.AllowIfLogIn, ir.IdeaService.GetTotalConsecutiveDays)
 }
