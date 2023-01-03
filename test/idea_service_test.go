@@ -333,8 +333,44 @@ func TestGetTotalConsecutiveDays(t *testing.T) {
 		return
 	}
 
+	if res.Data != 0 {
+		t.Errorf("TestGetTotalConsecutiveDays: expected data %v, got %v\n", 0, res.Data)
+		return
+	}
+
 	if !res.Success {
 		t.Errorf("TestGetTotalConsecutiveDays: %v\n", res.Success)
+		return
+	}
+
+	t.Log("passed")
+}
+
+func TestGetRecentIdeas(t *testing.T) {
+	type HTTPResponse struct {
+		StatusCode int           `json:"status"`
+		Success    bool          `json:"success"`
+		Message    string        `json:"message"`
+		Data       []models.Idea `json:"data"`
+	}
+	var res HTTPResponse
+	if _, err := AddAuthHeader(); err != nil {
+		t.Errorf("TestGetRecentIdeas: Fails to add auth header %v\n", err)
+		return
+	}
+
+	if err := unitTest.TestHandlerUnMarshalResp(utils.GET, "/api/ideas/recent", "json", nil, &res); err != nil {
+		t.Errorf("TestGetRecentIdeas: %v\n", err)
+		return
+	}
+
+	if !res.Success {
+		t.Errorf("TestGetRecentIdeas: %v\n", res.Success)
+		return
+	}
+
+	if len(res.Data) != 5 {
+		t.Errorf("TestGetRecentIdeas: expected %v, got %v\n", 5, len(res.Data))
 		return
 	}
 
