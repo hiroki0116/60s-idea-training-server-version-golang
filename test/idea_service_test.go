@@ -149,3 +149,73 @@ func TestGetIdeaByID(t *testing.T) {
 
 	t.Log("passed")
 }
+
+func TestUpdateIdea(t *testing.T) {
+	type HTTPResponse struct {
+		StatusCode int         `json:"status"`
+		Success    bool        `json:"success"`
+		Message    string      `json:"message"`
+		Data       models.Idea `json:"data"`
+	}
+
+	type IdeaParams struct {
+		TopicTitle string `json:"topicTitle"`
+		Category   string `json:"category"`
+		Viewed     bool   `json:"viewed"`
+		IsLiked    bool   `json:"isLiked"`
+	}
+
+	var res HTTPResponse
+	var params IdeaParams
+
+	if _, err := AddAuthHeader(); err != nil {
+		t.Errorf("TestCreateIdea: Fails to add auth header %v\n", err)
+		return
+	}
+
+	params = IdeaParams{
+		TopicTitle: "updated title",
+		Category:   "updated category",
+		Viewed:     true,
+		IsLiked:    true,
+	}
+
+	idea, err := getSampleIdea()
+	if err != nil {
+		t.Errorf("TestGetIdeaByID: Failed to get sample idea data...%v\n", err)
+		return
+	}
+
+	if err := unitTest.TestHandlerUnMarshalResp(utils.PUT, fmt.Sprintf("/api/ideas/%v", idea.ID.Hex()), "json", params, &res); err != nil {
+		t.Errorf("TestGetIdeaByID: %v\n", err)
+		return
+	}
+
+	if !res.Success {
+		t.Errorf("TestGetIdeaByID: %v\n", res.Success)
+		return
+	}
+
+	if !*res.Data.IsLiked {
+		t.Errorf("TestGetIdeaByID: expected isLiked %v, got %v\n", true, *res.Data.IsLiked)
+		return
+	}
+
+	if !*res.Data.Viewed {
+		t.Errorf("TestGetIdeaByID: expected viewed %v, got %v\n", true, *res.Data.Viewed)
+		return
+	}
+
+	if res.Data.Category != "updated category" {
+		t.Errorf("TestGetIdeaByID: expected category %v, got %v\n", "updated category", res.Data.Category)
+		return
+	}
+
+	if res.Data.TopicTitle != "updated title" {
+		t.Errorf("TestGetIdeaByID: expected topic title %v, got %v\n", "updated title", res.Data.TopicTitle)
+		return
+	}
+
+	t.Log("passed")
+
+}

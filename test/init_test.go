@@ -68,6 +68,9 @@ func TestMain(m *testing.M) {
 	unitTest.SetRouter(server)
 
 	log.Println("\n==========================\nPopulating sample data first! Wait for a momment...\n==========================")
+	firebase.DeleteAllUsersInFirebase()
+	DeleteSampleData(usercollection, ctx)
+	DeleteSampleData(ideacollection, ctx)
 	PopulateUserSampleData(usercollection, ctx)
 	PopulateIdeaSampleData(usercollection, ideacollection, ctx)
 
