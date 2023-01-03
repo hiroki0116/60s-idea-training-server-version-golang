@@ -313,3 +313,30 @@ func TestGetTotalIdeasOfAllTime(t *testing.T) {
 
 	t.Log("passed")
 }
+
+func TestGetTotalConsecutiveDays(t *testing.T) {
+	type HTTPResponse struct {
+		StatusCode int    `json:"status"`
+		Success    bool   `json:"success"`
+		Message    string `json:"message"`
+		Data       int    `json:"data"`
+	}
+	var res HTTPResponse
+
+	if _, err := AddAuthHeader(); err != nil {
+		t.Errorf("TestGetTotalConsecutiveDays: Fails to add auth header %v\n", err)
+		return
+	}
+
+	if err := unitTest.TestHandlerUnMarshalResp(utils.GET, "/api/ideas/total/consecutive", "json", nil, &res); err != nil {
+		t.Errorf("TestGetTotalConsecutiveDays: %v\n", err)
+		return
+	}
+
+	if !res.Success {
+		t.Errorf("TestGetTotalConsecutiveDays: %v\n", res.Success)
+		return
+	}
+
+	t.Log("passed")
+}

@@ -19,6 +19,7 @@ type IIdeaService interface {
 	DeleteIdea(ctx *gin.Context)
 	GetTotalIdeasOfToday(ctx *gin.Context)
 	GetTotalIdeasOfAllTime(ctx *gin.Context)
+	GetTotalConsecutiveDays(ctx *gin.Context)
 }
 
 type IdeaService struct {
@@ -156,6 +157,19 @@ func (is *IdeaService) GetTotalIdeasOfAllTime(ctx *gin.Context) {
 	result, err := is.IdeaController.GetTotalIdeasOfAllTime(userID)
 	if err != nil {
 		res := utils.NewHttpResponse(http.StatusBadRequest, errors.Wrap(err, "Error in getting ideas of all time"))
+		ctx.JSON(http.StatusBadRequest, res)
+		return
+	}
+	res := utils.NewHttpResponse(http.StatusOK, result)
+	ctx.JSON(http.StatusOK, res)
+}
+
+func (is *IdeaService) GetTotalConsecutiveDays(ctx *gin.Context) {
+	userID := utils.FetchUserFromCtx(ctx)
+
+	result, err := is.IdeaController.GetTotalConsecutiveDays(userID)
+	if err != nil {
+		res := utils.NewHttpResponse(http.StatusBadRequest, errors.Wrap(err, "Error in getting total consecutive days"))
 		ctx.JSON(http.StatusBadRequest, res)
 		return
 	}
