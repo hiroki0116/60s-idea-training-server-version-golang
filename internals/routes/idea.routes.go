@@ -23,4 +23,5 @@ func (ir *IdeaRoutes) IdeaRoutes(rg *gin.RouterGroup) {
 	idearoute := rg.Group("/ideas")
 
 	idearoute.POST("/", ir.RequireAuth.AllowIfLogIn, ir.IdeaService.CreateIdea)
+	idearoute.GET("/", ir.RequireAuth.AllowIfLogIn, ir.IdeaService.GetAllIdeas)
 }

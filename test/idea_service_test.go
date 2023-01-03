@@ -56,3 +56,38 @@ func TestCreateIdea(t *testing.T) {
 
 	t.Log("passed")
 }
+
+func TestGetAllIdeas(t *testing.T) {
+	type HTTPResponse struct {
+		StatusCode int           `json:"status"`
+		Success    bool          `json:"success"`
+		Message    string        `json:"message"`
+		Data       []models.Idea `json:"data"`
+	}
+
+	var res HTTPResponse
+
+	user := getSampleUser()
+	tokenString, err := GenerateJWTToken(user.Email)
+	if err != nil {
+		log.Fatal("Error in generating JWT token: ", err)
+		return
+	}
+	unitTest.AddHeader("Authorization", fmt.Sprintf("Bearer %s", tokenString))
+
+	if err := unitTest.TestHandlerUnMarshalResp(utils.GET, "/api/ideas/", "json", nil, &res); err != nil {
+		t.Errorf("TestGetAllIdeas: %v\n", err)
+		return
+	}
+
+	if !res.Success {
+		t.Errorf("TestGetAllIdeas: %v\n", res.Success)
+		return
+	}
+
+	if len(res.Data) == 0 {
+		t.Errorf("TestGetAllIdeas: expected ideas count > 0, got %v\n", len(res.Data))
+	}
+
+	t.Log("passed")
+}
