@@ -11,6 +11,7 @@ import (
 
 type IIdeaService interface {
 	CreateIdea(ctx *gin.Context)
+	GetAllIdeas(ctx *gin.Context)
 }
 
 type IdeaService struct {
@@ -41,4 +42,18 @@ func (is *IdeaService) CreateIdea(ctx *gin.Context) {
 	}
 	res := utils.NewHttpResponse(http.StatusCreated, newIdea)
 	ctx.JSON(http.StatusCreated, res)
+}
+
+func (is *IdeaService) GetAllIdeas(ctx *gin.Context) {
+	userID := utils.FetchUserFromCtx(ctx)
+
+	ideas, err := is.IdeaController.GetAllIdeas(userID)
+
+	if err != nil {
+		res := utils.NewHttpResponse(http.StatusBadRequest, err)
+		ctx.JSON(http.StatusBadRequest, res)
+		return
+	}
+	res := utils.NewHttpResponse(http.StatusOK, ideas)
+	ctx.JSON(http.StatusOK, res)
 }
