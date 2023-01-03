@@ -67,8 +67,9 @@ func TestMain(m *testing.M) {
 	idearoute.IdeaRoutes(basepath)
 	unitTest.SetRouter(server)
 
-	log.Println("Populating sample data in the beginning!")
+	log.Println("\n==========================\nPopulating sample data first! Wait for a momment...\n==========================")
 	PopulateUserSampleData(usercollection, ctx)
+	PopulateIdeaSampleData(usercollection, ideacollection, ctx)
 
 	newLog := log.New(os.Stdout, "", log.Llongfile|log.Ldate|log.Ltime)
 	unitTest.SetLog(newLog)
@@ -77,5 +78,6 @@ func TestMain(m *testing.M) {
 	log.Println("Everything below run after ALL test")
 	firebase.DeleteAllUsersInFirebase()
 	DeleteSampleData(usercollection, ctx)
+	DeleteSampleData(ideacollection, ctx)
 	os.Exit(exitVal)
 }

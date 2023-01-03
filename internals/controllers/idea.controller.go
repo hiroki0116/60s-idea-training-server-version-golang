@@ -18,6 +18,7 @@ type IdeaController struct {
 type IIdeaController interface {
 	CreateIdea(idea *models.Idea) (*models.Idea, error)
 	GetAllIdeas(userID primitive.ObjectID) ([]*models.Idea, error)
+	GetIdeaByID(ideaID primitive.ObjectID) (*models.Idea, error)
 }
 
 func NewIdeaController(ideacollection *mongo.Collection, ctx context.Context) IIdeaController {
@@ -65,4 +66,22 @@ func (ic *IdeaController) GetAllIdeas(userID primitive.ObjectID) ([]*models.Idea
 	}
 
 	return ideas, nil
+}
+
+func (ic *IdeaController) GetIdeaByID(ideaID primitive.ObjectID) (*models.Idea, error) {
+	var idea models.Idea
+
+	query := bson.D{
+		bson.E{
+			Key:   "_id",
+			Value: ideaID,
+		},
+	}
+
+	err := ic.ideacollection.FindOne(ic.ctx, query).Decode(&idea)
+	if err != nil {
+		return nil, err
+	}
+
+	return &idea, nil
 }

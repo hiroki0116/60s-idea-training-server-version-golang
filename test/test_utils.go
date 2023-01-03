@@ -11,6 +11,7 @@ import (
 
 	"github.com/golang-jwt/jwt"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -51,6 +52,61 @@ func PopulateUserSampleData(mongo *mongo.Collection, ctx context.Context) error 
 		}
 	}
 
+	return nil
+}
+
+func PopulateIdeaSampleData(usercollection *mongo.Collection, ideacollection *mongo.Collection, ctx context.Context) error {
+	// create one user sample data
+	type FBUser struct {
+		FirstName string `json:"firstName"`
+		LastName  string `json:"lastName"`
+		Email     string `json:"email"`
+		Password  string `json:"password"`
+	}
+
+	fb := &FBUser{
+		FirstName: "first_name_100",
+		LastName:  "last_name_100",
+		Email:     "test_email100@test.com",
+		Password:  "test_password100",
+	}
+	firebaseUID, err := firebase.CreateUserInFirebase(fb.Email, fb.Password, fb.FirstName, fb.LastName)
+	if err != nil {
+		log.Fatal("Error creating user in test firebase: ", err)
+		return err
+	}
+
+	user := models.User{
+		FirebaseUID: firebaseUID,
+		Email:       fb.Email,
+		FirstName:   fb.FirstName,
+		LastName:    fb.LastName,
+	}
+	result, err := usercollection.InsertOne(ctx, user)
+	if err != nil {
+		log.Fatal("Error inserting new user: ", err)
+		return err
+	}
+
+	oid, ok := result.InsertedID.(primitive.ObjectID)
+	if !ok {
+		log.Fatal("Error fetching user id: ", err)
+		return err
+	}
+
+	// create 10 ideas data
+	for i := 0; i < 10; i++ {
+		task := models.Idea{
+			TopicTitle: fmt.Sprintf("topic_title_%d", i),
+			Ideas:      &[]string{fmt.Sprintf("idea_%d", i)},
+			CreatedBy:  oid,
+		}
+
+		if _, err := ideacollection.InsertOne(ctx, task); err != nil {
+			log.Fatal("Error inserting new task: ", err)
+			return err
+		}
+	}
 	return nil
 }
 
