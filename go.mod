@@ -11,6 +11,7 @@ require (
 	cloud.google.com/go/compute/metadata v0.2.3 // indirect
 	cloud.google.com/go/longrunning v0.3.0 // indirect
 	github.com/Valiben/gin_unit_test v0.0.0-20181205064931-674aee46d090 // indirect
+	github.com/snabb/isoweek v1.0.1 // indirect
 	golang.org/x/time v0.3.0 // indirect
 )
 
