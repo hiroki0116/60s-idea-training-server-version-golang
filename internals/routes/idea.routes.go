@@ -32,4 +32,5 @@ func (ir *IdeaRoutes) IdeaRoutes(rg *gin.RouterGroup) {
 	idearoute.GET("/total/consecutive", ir.RequireAuth.AllowIfLogIn, ir.IdeaService.GetTotalConsecutiveDays)
 	idearoute.GET("/recent", ir.RequireAuth.AllowIfLogIn, ir.IdeaService.GetRecentIdeas)
 	idearoute.GET("/weekly", ir.RequireAuth.AllowIfLogIn, ir.IdeaService.GetWeeklyIdeas)
+	idearoute.POST("/search", ir.RequireAuth.AllowIfLogIn, ir.IdeaService.SearchIdeas)
 }

@@ -12,6 +12,7 @@ require (
 	cloud.google.com/go/longrunning v0.3.0 // indirect
 	github.com/Valiben/gin_unit_test v0.0.0-20181205064931-674aee46d090 // indirect
 	github.com/creasty/defaults v1.5.1 // indirect
+	github.com/gobeam/mongo-go-pagination v0.0.8 // indirect
 	github.com/gorilla/schema v1.2.0 // indirect
 	github.com/snabb/isoweek v1.0.1 // indirect
 	golang.org/x/time v0.3.0 // indirect
@@ -46,7 +47,7 @@ require (
 	github.com/googleapis/enterprise-certificate-proxy v0.2.1 // indirect
 	github.com/googleapis/gax-go/v2 v2.7.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
-	github.com/klauspost/compress v1.15.13 // indirect
+	github.com/klauspost/compress v1.15.14 // indirect
 	github.com/leodido/go-urn v1.2.1 // indirect
 	github.com/mattn/go-colorable v0.1.4 // indirect
 	github.com/mattn/go-isatty v0.0.17 // indirect
