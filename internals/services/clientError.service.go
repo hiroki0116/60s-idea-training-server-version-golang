@@ -1,7 +1,9 @@
 package services
 
 import (
+	"idea-training-version-go/internals/utils"
 	"log"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 	errors "github.com/pkg/errors"
@@ -17,4 +19,6 @@ func LogClientError(ctx *gin.Context) {
 		return
 	}
 	log.Println("Client Error====>", req.Message)
+	res := utils.NewHttpResponse(http.StatusOK, nil)
+	ctx.JSON(http.StatusOK, res)
 }
