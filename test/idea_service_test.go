@@ -376,3 +376,34 @@ func TestGetRecentIdeas(t *testing.T) {
 
 	t.Log("passed")
 }
+
+func TestGetWeeklyIdeas(t *testing.T) {
+	// type ResponseBody struct {
+	// 	WeeklyRecords []primitive.M `json:"weeklyRecords"`
+	// 	LastMonday    time.Time     `json:"lastMonday"`
+	// }
+	type HTTPResponse struct {
+		StatusCode int         `json:"status"`
+		Success    bool        `json:"success"`
+		Message    string      `json:"message"`
+		Data       interface{} `json:"data"`
+	}
+
+	var res HTTPResponse
+	if _, err := AddAuthHeader(); err != nil {
+		t.Errorf("TestGetWeeklyIdeas: Fails to add auth header %v\n", err)
+		return
+	}
+
+	if err := unitTest.TestHandlerUnMarshalResp(utils.GET, "/api/ideas/weekly", "json", nil, &res); err != nil {
+		t.Errorf("TestGetWeeklyIdeas: %v\n", err)
+		return
+	}
+
+	if !res.Success {
+		t.Errorf("TestGetWeeklyIdeas: %v\n", res.Success)
+		return
+	}
+	t.Log("passed")
+
+}

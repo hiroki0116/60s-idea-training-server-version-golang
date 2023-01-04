@@ -5,6 +5,7 @@ import (
 	"idea-training-version-go/internals/models"
 	"idea-training-version-go/internals/utils"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	errors "github.com/pkg/errors"
@@ -21,6 +22,7 @@ type IIdeaService interface {
 	GetTotalIdeasOfAllTime(ctx *gin.Context)
 	GetTotalConsecutiveDays(ctx *gin.Context)
 	GetRecentIdeas(ctx *gin.Context)
+	GetWeeklyIdeas(ctx *gin.Context)
 }
 
 type IdeaService struct {
@@ -188,5 +190,24 @@ func (is *IdeaService) GetRecentIdeas(ctx *gin.Context) {
 		return
 	}
 	res := utils.NewHttpResponse(http.StatusOK, result)
+	ctx.JSON(http.StatusOK, res)
+}
+
+func (is *IdeaService) GetWeeklyIdeas(ctx *gin.Context) {
+	userID := utils.FetchUserFromCtx(ctx)
+
+	result, lastMonday, err := is.IdeaController.GetWeeklyIdeas(userID)
+	if err != nil {
+		res := utils.NewHttpResponse(http.StatusBadRequest, errors.Wrap(err, "Error in getting weekly ideas"))
+		ctx.JSON(http.StatusBadRequest, res)
+		return
+	}
+
+	type ResponseBody struct {
+		WeeklyRecords []primitive.M `json:"weeklyRecords"`
+		LastMonday    time.Time     `json:"lastMonday"`
+	}
+
+	res := utils.NewHttpResponse(http.StatusOK, &ResponseBody{WeeklyRecords: result, LastMonday: lastMonday})
 	ctx.JSON(http.StatusOK, res)
 }

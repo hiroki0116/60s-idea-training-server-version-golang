@@ -6,6 +6,7 @@ import (
 	"time"
 
 	errors "github.com/pkg/errors"
+	"github.com/snabb/isoweek"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -27,6 +28,7 @@ type IIdeaController interface {
 	GetTotalIdeasOfAllTime(userID primitive.ObjectID) ([]bson.M, error)
 	GetTotalConsecutiveDays(userID primitive.ObjectID) (int, error)
 	GetRecentIdeas(userID primitive.ObjectID) ([]*models.Idea, error)
+	GetWeeklyIdeas(userID primitive.ObjectID) ([]bson.M, time.Time, error)
 }
 
 func NewIdeaController(ideacollection *mongo.Collection, ctx context.Context) IIdeaController {
@@ -335,4 +337,93 @@ func (ic *IdeaController) GetRecentIdeas(userID primitive.ObjectID) ([]*models.I
 	}
 
 	return ideas, nil
+}
+
+func (ic *IdeaController) GetWeeklyIdeas(userID primitive.ObjectID) ([]bson.M, time.Time, error) {
+	now := time.Now()
+	year, month, _ := now.UTC().Date()
+	lastMonday := isoweek.StartTime(year, int(month), time.UTC)
+
+	matchStage := bson.D{
+		bson.E{
+			Key: "$match",
+			Value: bson.D{
+				bson.E{
+					Key:   "createdBy",
+					Value: userID,
+				},
+				bson.E{
+					Key: "createdAt",
+					Value: bson.D{
+						bson.E{
+							Key:   "$gte",
+							Value: lastMonday,
+						},
+					},
+				},
+			},
+		},
+	}
+	groupStage := bson.D{
+		bson.E{
+			Key: "$group",
+			Value: bson.D{
+				bson.E{
+					Key: "_id",
+					Value: bson.D{
+						bson.E{
+							Key: "$dateToString",
+							Value: bson.D{
+								bson.E{
+									Key:   "format",
+									Value: "%Y-%m-%d",
+								},
+								bson.E{
+									Key:   "date",
+									Value: "$createdAt",
+								},
+							},
+						},
+					},
+				},
+				bson.E{
+					Key: "totalIdeas",
+					Value: bson.D{
+						bson.E{
+							Key: "$sum",
+							Value: bson.D{
+								bson.E{
+									Key:   "$size",
+									Value: "$ideas",
+								},
+							},
+						},
+					},
+				},
+				bson.E{
+					Key: "totalSessions",
+					Value: bson.D{
+						bson.E{
+							Key:   "$sum",
+							Value: 1,
+						},
+					},
+				},
+			},
+		},
+	}
+
+	cursor, err := ic.ideacollection.Aggregate(ic.ctx, mongo.Pipeline{matchStage, groupStage})
+	if err != nil {
+		return nil, lastMonday, err
+	}
+
+	// display the results
+	var results []bson.M
+	if err = cursor.All(context.TODO(), &results); err != nil {
+		return results, lastMonday, err
+	}
+
+	return results, lastMonday, nil
+
 }
