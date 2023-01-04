@@ -55,8 +55,11 @@ func init() {
 
 func main() {
 	defer db.MongoDB.Disconnect(ctx)
+	// routes
 	basepath := server.Group("/api")
 	userroute.UserRoutes(basepath)
 	idearoute.IdeaRoutes(basepath)
+	routes.ClientErrorRoutes(basepath)
+
 	log.Fatalln(server.Run(":" + os.Getenv("PORT")))
 }
