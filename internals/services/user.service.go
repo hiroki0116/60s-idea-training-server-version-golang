@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"fmt"
 	"idea-training-version-go/internals/controllers"
 	"idea-training-version-go/internals/db"
 	"idea-training-version-go/internals/models"
@@ -23,6 +24,7 @@ type IUserService interface {
 	UpdateUser(ctx *gin.Context)
 	UploadImageCloudinary(ctx *gin.Context)
 	RemoveImageCloudinary(ctx *gin.Context)
+	GetUserByEmail(ctx *gin.Context)
 }
 
 type UserService struct {
@@ -193,5 +195,20 @@ func (us *UserService) RemoveImageCloudinary(ctx *gin.Context) {
 	}
 
 	res := utils.NewHttpResponse(http.StatusOK, resp)
+	ctx.JSON(http.StatusOK, res)
+}
+
+func (us *UserService) GetUserByEmail(ctx *gin.Context) {
+	email := ctx.Query("email")
+	fmt.Println(email)
+	// get users from mongodb
+	user, err := us.UserController.GetUserByEmail(email)
+	if err != nil {
+		res := utils.NewHttpResponse(http.StatusBadRequest, errors.Wrap(err, "Error in getting user by email from mongodb"))
+		ctx.JSON(http.StatusBadRequest, res)
+		return
+	}
+
+	res := utils.NewHttpResponse(http.StatusOK, user)
 	ctx.JSON(http.StatusOK, res)
 }
