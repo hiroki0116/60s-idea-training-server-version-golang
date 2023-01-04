@@ -8,7 +8,9 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	paginate "github.com/gobeam/mongo-go-pagination"
 	errors "github.com/pkg/errors"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -23,6 +25,7 @@ type IIdeaService interface {
 	GetTotalConsecutiveDays(ctx *gin.Context)
 	GetRecentIdeas(ctx *gin.Context)
 	GetWeeklyIdeas(ctx *gin.Context)
+	SearchIdeas(ctx *gin.Context)
 }
 
 type IdeaService struct {
@@ -209,5 +212,96 @@ func (is *IdeaService) GetWeeklyIdeas(ctx *gin.Context) {
 	}
 
 	res := utils.NewHttpResponse(http.StatusOK, &ResponseBody{WeeklyRecords: result, LastMonday: lastMonday})
+	ctx.JSON(http.StatusOK, res)
+}
+
+func (is *IdeaService) SearchIdeas(ctx *gin.Context) {
+
+	type RequestBody struct {
+		SearchInput   string    `json:"searchInput,omitempty"`
+		Category      string    `json:"category,omitempty"`
+		CreatedAtFrom time.Time `json:"createdAtFrom,omitempty"`
+		CreatedAtTo   time.Time `json:"createdAtTo,omitempty"`
+		Pagesize      int       `json:"pageSize,omitempty"`
+		Current       int       `json:"current"`
+		SortByRecent  bool      `json:"sortByRecent,omitempty"`
+		IsLiked       bool      `json:"isLiked,omitempty"`
+	}
+
+	var req RequestBody
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		res := utils.NewHttpResponse(http.StatusBadRequest, errors.Wrap(err, "Request body is not valid"))
+		ctx.JSON(http.StatusBadRequest, res)
+		return
+	}
+
+	userID := utils.FetchUserFromCtx(ctx)
+
+	// matchStage
+	filter := bson.M{}
+	filter["createdBy"] = userID
+	// filtering createdAt duration
+	if req.CreatedAtFrom.IsZero() && !req.CreatedAtTo.IsZero() {
+		filter["createdAt"] = bson.M{"$lte": req.CreatedAtTo}
+	}
+
+	if !req.CreatedAtFrom.IsZero() && req.CreatedAtTo.IsZero() {
+		filter["createdAt"] = bson.M{"$gte": req.CreatedAtFrom}
+	}
+
+	if !req.CreatedAtFrom.IsZero() && !req.CreatedAtTo.IsZero() {
+		filter["createdAt"] = bson.M{"$gte": req.CreatedAtFrom, "$lte": req.CreatedAtTo}
+	}
+
+	if req.Category != "" {
+		filter["category"] = req.Category
+	}
+
+	if req.IsLiked {
+		filter["isLiked"] = true
+	}
+
+	if req.SearchInput != "" {
+		filter["$or"] = []bson.M{
+			{"topicTitle": bson.M{"$regex": req.SearchInput, "$options": "i"}},
+			{"ideas": bson.M{"$regex": req.SearchInput, "$options": "i"}},
+			{"category": bson.M{"$regex": req.SearchInput, "$options": "i"}},
+		}
+	}
+
+	// sort
+	var sort int
+	if req.SortByRecent {
+		sort = -1
+	} else {
+		sort = 1
+	}
+
+	// page and size
+	if req.Current == 0 {
+		req.Current = 1
+	}
+	if req.Pagesize == 0 {
+		req.Pagesize = 9
+	}
+
+	results, paginateData, err := is.IdeaController.Search(filter, sort, req.Current, req.Pagesize)
+	if err != nil {
+		res := utils.NewHttpResponse(http.StatusBadRequest, errors.Wrap(err, "Error in searching ideas"))
+		ctx.JSON(http.StatusBadRequest, res)
+		return
+	}
+
+	type ResponseBody struct {
+		Ideas        []models.Idea           `json:"ideas"`
+		PaginateData *paginate.PaginatedData `json:"paginateData"`
+	}
+
+	resBody := ResponseBody{
+		Ideas:        results,
+		PaginateData: paginateData,
+	}
+
+	res := utils.NewHttpResponse(http.StatusOK, resBody)
 	ctx.JSON(http.StatusOK, res)
 }

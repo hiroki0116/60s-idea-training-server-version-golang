@@ -97,7 +97,7 @@ func PopulateIdeaSampleData(usercollection *mongo.Collection, ideacollection *mo
 	// create 10 ideas data
 	for i := 0; i < 10; i++ {
 		task := models.Idea{
-			TopicTitle: fmt.Sprintf("topic_title_%d", i),
+			TopicTitle: fmt.Sprintf("test title %d", i),
 			Ideas:      &[]string{fmt.Sprintf("idea_%d", i)},
 			CreatedBy:  oid,
 		}

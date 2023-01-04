@@ -3,8 +3,10 @@ package controllers
 import (
 	"context"
 	"idea-training-version-go/internals/models"
+	"log"
 	"time"
 
+	paginate "github.com/gobeam/mongo-go-pagination"
 	errors "github.com/pkg/errors"
 	"github.com/snabb/isoweek"
 	"go.mongodb.org/mongo-driver/bson"
@@ -29,6 +31,7 @@ type IIdeaController interface {
 	GetTotalConsecutiveDays(userID primitive.ObjectID) (int, error)
 	GetRecentIdeas(userID primitive.ObjectID) ([]*models.Idea, error)
 	GetWeeklyIdeas(userID primitive.ObjectID) ([]bson.M, time.Time, error)
+	Search(filter bson.M, sort int, page int, limit int) ([]models.Idea, *paginate.PaginatedData, error)
 }
 
 func NewIdeaController(ideacollection *mongo.Collection, ctx context.Context) IIdeaController {
@@ -426,4 +429,19 @@ func (ic *IdeaController) GetWeeklyIdeas(userID primitive.ObjectID) ([]bson.M, t
 
 	return results, lastMonday, nil
 
+}
+
+func (ic *IdeaController) Search(filter bson.M, sort int, page int, limit int) ([]models.Idea, *paginate.PaginatedData, error) {
+
+	collation := options.Collation{
+		Locale:   "en",
+		Strength: 1,
+	}
+	var ideas []models.Idea
+	paginatedData, err := paginate.New(ic.ideacollection).SetCollation(&collation).Context(ic.ctx).Limit(int64(limit)).Page(int64(page)).Sort("updatedAt", sort).Filter(filter).Decode(&ideas).Find()
+	if err != nil {
+		log.Println(err)
+		return nil, nil, err
+	}
+	return ideas, paginatedData, nil
 }

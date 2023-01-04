@@ -8,7 +8,10 @@ import (
 	"idea-training-version-go/internals/utils"
 	"idea-training-version-go/internals/utils/firebase"
 	"net/http"
+	"os"
 
+	"github.com/cloudinary/cloudinary-go/v2"
+	"github.com/cloudinary/cloudinary-go/v2/api/uploader"
 	"github.com/gin-gonic/gin"
 	errors "github.com/pkg/errors"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -18,6 +21,8 @@ import (
 type IUserService interface {
 	SignUp(ctx *gin.Context)
 	UpdateUser(ctx *gin.Context)
+	UploadImageCloudinary(ctx *gin.Context)
+	RemoveImageCloudinary(ctx *gin.Context)
 }
 
 type UserService struct {
@@ -139,5 +144,54 @@ func (us *UserService) UpdateUser(ctx *gin.Context) {
 	}
 
 	res := utils.NewHttpResponse(http.StatusOK, updatedUser)
+	ctx.JSON(http.StatusOK, res)
+}
+
+func (us *UserService) UploadImageCloudinary(ctx *gin.Context) {
+	type RequestBody struct {
+		Image  string `json:"image"`
+		Folder string `json:"folder"`
+	}
+	var req RequestBody
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		res := utils.NewHttpResponse(http.StatusBadRequest, errors.Wrap(err, "Request body is not valid"))
+		ctx.JSON(http.StatusBadRequest, res)
+	}
+
+	cld, _ := cloudinary.NewFromParams(string(os.Getenv("CLOUDINARY_CLOUD_NAME")), string(os.Getenv("CLOUDINARY_API_KEY")), string(os.Getenv("CLOUDINARY_API_SECRET")))
+
+	resp, err := cld.Upload.Upload(ctx, req.Image, uploader.UploadParams{Folder: req.Folder})
+
+	if err != nil {
+		res := utils.NewHttpResponse(http.StatusBadRequest, errors.Wrap(err, "Error in uploading image"))
+		ctx.JSON(http.StatusBadRequest, res)
+		return
+	}
+
+	res := utils.NewHttpResponse(http.StatusOK, resp)
+	ctx.JSON(http.StatusOK, res)
+}
+
+func (us *UserService) RemoveImageCloudinary(ctx *gin.Context) {
+	type RequestBody struct {
+		PublicID uploader.DestroyParams `json:"public_id"`
+	}
+	var req RequestBody
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		res := utils.NewHttpResponse(http.StatusBadRequest, errors.Wrap(err, "Request body is not valid"))
+		ctx.JSON(http.StatusBadRequest, res)
+	}
+
+	cld, _ := cloudinary.NewFromParams(string(os.Getenv("CLOUDINARY_CLOUD_NAME")), string(os.Getenv("CLOUDINARY_API_KEY")), string(os.Getenv("CLOUDINARY_API_SECRET")))
+
+	resp, err := cld.Upload.Destroy(ctx, req.PublicID)
+
+	if err != nil {
+		res := utils.NewHttpResponse(http.StatusBadRequest, errors.Wrap(err, "Error in deleting image"))
+		ctx.JSON(http.StatusBadRequest, res)
+		return
+	}
+
+	res := utils.NewHttpResponse(http.StatusOK, resp)
 	ctx.JSON(http.StatusOK, res)
 }

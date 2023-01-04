@@ -8,6 +8,7 @@ import (
 
 	unitTest "github.com/Valiben/gin_unit_test"
 	"github.com/Valiben/gin_unit_test/utils"
+	paginate "github.com/gobeam/mongo-go-pagination"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -423,4 +424,64 @@ func TestGetWeeklyIdeas(t *testing.T) {
 
 	t.Log("passed")
 
+}
+
+func TestSearchIdeas(t *testing.T) {
+	type ResponseBody struct {
+		Ideas        []models.Idea           `json:"ideas"`
+		PaginateData *paginate.PaginatedData `json:"paginateData"`
+	}
+
+	type SearchParams struct {
+		SearchInput   string    `json:"searchInput,omitempty"`
+		Category      string    `json:"category,omitempty"`
+		CreatedAtFrom time.Time `json:"createdAtFrom,omitempty"`
+		CreatedAtTo   time.Time `json:"createdAtTo,omitempty"`
+		Pagesize      int       `json:"pageSize,omitempty"`
+		Current       int       `json:"current"`
+		SortByRecent  bool      `json:"sortByRecent,omitempty"`
+		IsLiked       bool      `json:"isLiked,omitempty"`
+	}
+
+	type HTTPResponse struct {
+		StatusCode int          `json:"status"`
+		Success    bool         `json:"success"`
+		Message    string       `json:"message"`
+		Data       ResponseBody `json:"data"`
+	}
+	var res HTTPResponse
+	if _, err := AddAuthHeader(); err != nil {
+		t.Errorf("TestSearchIdeas: Fails to add auth header %v\n", err)
+		return
+	}
+
+	params := SearchParams{
+		SearchInput:  "test",
+		Pagesize:     9,
+		Current:      1,
+		IsLiked:      false,
+		SortByRecent: true,
+	}
+
+	if err := unitTest.TestHandlerUnMarshalResp(utils.POST, "/api/ideas/search", "json", params, &res); err != nil {
+		t.Errorf("TestSearchIdeas: %v\n", err)
+		return
+	}
+
+	if res.Data.PaginateData.Pagination.PerPage != 9 {
+		t.Errorf("TestSearchIdeas: expected %v, got %v\n", 9, len(res.Data.Ideas))
+		return
+	}
+
+	if len(res.Data.Ideas) != 9 {
+		t.Errorf("TestSearchIdeas: expected %v, got %v\n", 9, len(res.Data.Ideas))
+		return
+	}
+
+	if !res.Success {
+		t.Errorf("TestSearchIdeas: %v\n", res.Success)
+		return
+	}
+
+	t.Log("passed")
 }
