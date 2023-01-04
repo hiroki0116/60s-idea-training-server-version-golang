@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"idea-training-version-go/internals/models"
 	"testing"
+	"time"
 
 	unitTest "github.com/Valiben/gin_unit_test"
 	"github.com/Valiben/gin_unit_test/utils"
@@ -378,15 +379,20 @@ func TestGetRecentIdeas(t *testing.T) {
 }
 
 func TestGetWeeklyIdeas(t *testing.T) {
-	// type ResponseBody struct {
-	// 	WeeklyRecords []primitive.M `json:"weeklyRecords"`
-	// 	LastMonday    time.Time     `json:"lastMonday"`
-	// }
+	type WeeklyBody struct {
+		TotalIdeas    int    `json:"totalIdeas"`
+		TotalSessions int    `json:"totalSessions"`
+		ID            string `json:"_id"`
+	}
+	type ResponseBody struct {
+		WeeklyRecords []WeeklyBody `json:"weeklyRecords"`
+		LastMonday    time.Time    `json:"lastMonday"`
+	}
 	type HTTPResponse struct {
-		StatusCode int         `json:"status"`
-		Success    bool        `json:"success"`
-		Message    string      `json:"message"`
-		Data       interface{} `json:"data"`
+		StatusCode int          `json:"status"`
+		Success    bool         `json:"success"`
+		Message    string       `json:"message"`
+		Data       ResponseBody `json:"data"`
 	}
 
 	var res HTTPResponse
@@ -400,10 +406,21 @@ func TestGetWeeklyIdeas(t *testing.T) {
 		return
 	}
 
+	if res.Data.WeeklyRecords[0].TotalIdeas < 1 {
+		t.Errorf("TestGetWeeklyIdeas: expected %v, got %v\n", 1, res.Data.WeeklyRecords[0].TotalIdeas)
+		return
+	}
+
+	if res.Data.WeeklyRecords[0].TotalSessions < 1 {
+		t.Errorf("TestGetWeeklyIdeas: expected %v, got %v\n", 1, res.Data.WeeklyRecords[0].TotalSessions)
+		return
+	}
+
 	if !res.Success {
 		t.Errorf("TestGetWeeklyIdeas: %v\n", res.Success)
 		return
 	}
+
 	t.Log("passed")
 
 }
