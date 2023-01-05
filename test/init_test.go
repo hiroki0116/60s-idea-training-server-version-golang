@@ -78,7 +78,7 @@ func TestMain(m *testing.M) {
 	unitTest.SetLog(newLog)
 	exitVal := m.Run()
 
-	log.Println("Everything below run after ALL test")
+	log.Println("======================== Cleaning sample data! Wait for a momment... =======================")
 	firebase.DeleteAllUsersInFirebase()
 	DeleteSampleData(usercollection, ctx)
 	DeleteSampleData(ideacollection, ctx)
