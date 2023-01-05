@@ -181,7 +181,7 @@ func (us *UserService) UploadImageCloudinary(ctx *gin.Context) {
 
 func (us *UserService) RemoveImageCloudinary(ctx *gin.Context) {
 	type RequestBody struct {
-		PublicID uploader.DestroyParams `json:"public_id"`
+		PublicID interface{} `json:"public_id,omitempty"`
 	}
 	var req RequestBody
 	if err := ctx.ShouldBindJSON(&req); err != nil {
@@ -190,10 +190,10 @@ func (us *UserService) RemoveImageCloudinary(ctx *gin.Context) {
 		return
 	}
 
+	publicID, _ := req.PublicID.(uploader.DestroyParams)
+
 	cld, _ := cloudinary.NewFromParams(string(os.Getenv("CLOUDINARY_CLOUD_NAME")), string(os.Getenv("CLOUDINARY_API_KEY")), string(os.Getenv("CLOUDINARY_API_SECRET")))
-
-	resp, err := cld.Upload.Destroy(ctx, req.PublicID)
-
+	resp, err := cld.Upload.Destroy(ctx, publicID)
 	if err != nil {
 		res := utils.NewHttpResponse(http.StatusBadRequest, errors.Wrap(err, "Error in deleting image"))
 		ctx.JSON(http.StatusBadRequest, res)

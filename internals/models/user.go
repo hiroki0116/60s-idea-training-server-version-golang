@@ -21,8 +21,9 @@ type User struct {
 }
 
 type Image struct {
-	About string `json:"about" bson:"about"`
-	Url   string `json:"url" bson:"url"`
+	About    string `json:"about" bson:"about,omitempty"`
+	Url      string `json:"url" bson:"url,omitempty"`
+	PublicID string `json:"public_id" bson:"public_id,omitempty"`
 }
 
 func (u *User) MarshalBSON() ([]byte, error) {
