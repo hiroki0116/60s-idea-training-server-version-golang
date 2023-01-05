@@ -23,7 +23,8 @@ func (ur *UserRoutes) UserRoutes(rg *gin.RouterGroup) {
 	userroute := rg.Group("/users")
 
 	userroute.POST("/signup", ur.UserService.SignUp)
-	userroute.PUT("/update/:id", ur.RequireAuth.AllowIfLogIn, ur.UserService.UpdateUser)
+	userroute.GET("/", ur.UserService.GetUserByEmail)
+	userroute.PUT("/:id", ur.RequireAuth.AllowIfLogIn, ur.UserService.UpdateUser)
 	userroute.POST("/images", ur.RequireAuth.AllowIfLogIn, ur.UserService.UploadImageCloudinary)
-	userroute.DELETE("/images", ur.RequireAuth.AllowIfLogIn, ur.UserService.RemoveImageCloudinary)
+	userroute.PUT("/images", ur.RequireAuth.AllowIfLogIn, ur.UserService.RemoveImageCloudinary)
 }

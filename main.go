@@ -9,7 +9,9 @@ import (
 	"idea-training-version-go/internals/services"
 	"log"
 	"os"
+	"time"
 
+	"github.com/gin-contrib/cors"
 	errors "github.com/pkg/errors"
 	"go.mongodb.org/mongo-driver/mongo"
 
@@ -51,6 +53,15 @@ func init() {
 	userroute = routes.NewUserRoutes(userservice, requireauth)
 	idearoute = routes.NewIdeaRoutes(ideaservice, requireauth)
 	server = gin.Default()
+	// CORS
+	server.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"http://localhost:3000", "https://60s-idea-training-client-llhirky9e-hiroki0116.vercel.app"},
+		AllowMethods:     []string{"PUT", "PATCH", "OPTION", "DELETE"},
+		AllowHeaders:     []string{"Origin", "Content-Length", "Content-Type", "authorization"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+		MaxAge:           12 * time.Hour,
+	}))
 }
 
 func main() {

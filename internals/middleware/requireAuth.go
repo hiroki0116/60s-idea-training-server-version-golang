@@ -61,7 +61,7 @@ func (r *RequireAuth) AllowIfLogIn(ctx *gin.Context) {
 
 	user, err := r.UserController.GetUserByEmail(email)
 	if err != nil {
-		res := utils.NewHttpResponse(http.StatusUnauthorized, errors.Wrap(err, "Failed to get user from mongo db"))
+		res := utils.NewHttpResponse(http.StatusUnauthorized, errors.Wrap(err, "Failed to get user from mongo db in auth middleware function"))
 		ctx.AbortWithStatusJSON(http.StatusUnauthorized, res)
 		return
 	}

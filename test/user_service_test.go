@@ -101,7 +101,7 @@ func TestUpdateUser(t *testing.T) {
 		return
 	}
 
-	if err := unitTest.TestHandlerUnMarshalResp(utils.PUT, fmt.Sprintf("/api/users/update/%v", user.ID.Hex()), "json", params, &res); err != nil {
+	if err := unitTest.TestHandlerUnMarshalResp(utils.PUT, fmt.Sprintf("/api/users/%v", user.ID.Hex()), "json", params, &res); err != nil {
 		t.Errorf("TestUpdateUser: %v/n", err)
 		return
 	}

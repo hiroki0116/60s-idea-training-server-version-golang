@@ -3,6 +3,7 @@ package controllers
 import (
 	"context"
 	"idea-training-version-go/internals/models"
+	"time"
 
 	errors "github.com/pkg/errors"
 
@@ -10,6 +11,9 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
+
+const DEFAULT_USER_ROLE = "user"
+const DEFAULT_USER_IMAGE = "https://res.cloudinary.com/sixty-seconds-idea-training-project/image/upload/v1656157889/users/default-user-image_LYizIFTei_ioicfh.png"
 
 type UserController struct {
 	usercollection *mongo.Collection
@@ -31,6 +35,21 @@ func NewUserController(usercollection *mongo.Collection, ctx context.Context) IU
 }
 
 func (uc *UserController) CreateUser(user *models.User) (*models.User, error) {
+	// deal with time stamps
+	user.CreatedAt = time.Now()
+	// deal with default role
+	if user.Role == "" {
+		user.Role = DEFAULT_USER_ROLE
+	}
+
+	// deal with default image
+	if len(user.Images) == 0 {
+		user.Images = append(user.Images, models.Image{
+			About: "default",
+			Url:   DEFAULT_USER_IMAGE,
+		})
+	}
+
 	result, err := uc.usercollection.InsertOne(uc.ctx, user)
 	if err != nil {
 		return nil, errors.Wrap(err, "Error in InsertOne")
