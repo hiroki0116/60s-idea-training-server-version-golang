@@ -352,7 +352,7 @@ func (ic *IdeaController) GetRecentIdeas(userID primitive.ObjectID) ([]*models.I
 		},
 	}
 
-	opts := options.Find().SetLimit(5)
+	opts := options.Find().SetSort(bson.D{bson.E{Key: "createdAt", Value: -1}}).SetLimit(5)
 
 	count, _ := ic.ideacollection.CountDocuments(ic.ctx, query)
 	if count == 0 {
