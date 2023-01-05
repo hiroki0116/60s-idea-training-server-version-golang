@@ -55,7 +55,7 @@ func init() {
 	server = gin.Default()
 	// CORS
 	server.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://localhost:3000", "https://60s-idea-training-client-llhirky9e-hiroki0116.vercel.app"},
+		AllowOrigins:     []string{"http://localhost:3000", "https://60s-idea-training-client-6vl01gmwz-hiroki0116.vercel.app"},
 		AllowMethods:     []string{"PUT", "PATCH", "OPTION", "DELETE"},
 		AllowHeaders:     []string{"Origin", "Content-Length", "Content-Type", "authorization"},
 		ExposeHeaders:    []string{"Content-Length"},
