@@ -24,35 +24,6 @@ func (i *Idea) MarshalBSON() ([]byte, error) {
 	// deal with time stamps
 	i.UpdatedAt = time.Now()
 
-	// deal with default topic title
-	if i.TopicTitle == "" {
-		i.TopicTitle = "Untitled"
-	}
-
-	// deal with default category
-	if i.Category == "" {
-		i.Category = "Other"
-	}
-	// deal with default viewed
-	if i.Viewed == nil {
-		i.Viewed = &[]bool{false}[0]
-	}
-
-	// deal with default isLiked
-	if i.IsLiked == nil {
-		i.IsLiked = &[]bool{false}[0]
-	}
-
-	// deal with default ideas
-	if i.Ideas == nil {
-		i.Ideas = &[]string{}
-	}
-
-	// deal with default comment
-	if i.Comment == nil {
-		i.Comment = &[]string{""}[0]
-	}
-
 	type custom Idea
 	return bson.Marshal((*custom)(i))
 }

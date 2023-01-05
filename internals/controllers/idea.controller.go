@@ -43,6 +43,35 @@ func NewIdeaController(ideacollection *mongo.Collection, ctx context.Context) II
 
 func (ic *IdeaController) CreateIdea(idea *models.Idea) (*models.Idea, error) {
 	idea.CreatedAt = time.Now()
+	// deal with default topic title
+	if idea.TopicTitle == "" {
+		idea.TopicTitle = "Untitled"
+	}
+
+	// deal with default category
+	if idea.Category == "" {
+		idea.Category = "Other"
+	}
+	// deal with default viewed
+	if idea.Viewed == nil {
+		idea.Viewed = &[]bool{false}[0]
+	}
+
+	// deal with default isLiked
+	if idea.IsLiked == nil {
+		idea.IsLiked = &[]bool{false}[0]
+	}
+
+	// deal with default ideas
+	if idea.Ideas == nil {
+		idea.Ideas = &[]string{}
+	}
+
+	// deal with default comment
+	if idea.Comment == nil {
+		idea.Comment = &[]string{""}[0]
+	}
+
 	result, err := ic.ideacollection.InsertOne(ic.ctx, idea)
 	if err != nil {
 		return nil, err
