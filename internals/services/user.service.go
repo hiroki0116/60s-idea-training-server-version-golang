@@ -2,7 +2,6 @@ package services
 
 import (
 	"context"
-	"fmt"
 	"idea-training-version-go/internals/controllers"
 	"idea-training-version-go/internals/db"
 	"idea-training-version-go/internals/models"
@@ -105,9 +104,10 @@ func (us *UserService) SignUp(ctx *gin.Context) {
 
 func (us *UserService) UpdateUser(ctx *gin.Context) {
 	type RequestBody struct {
-		Email     string `json:"email,omitempty"`
-		FirstName string `json:"firstName,omitempty"`
-		LastName  string `json:"lastName,omitempty"`
+		Email     string         `json:"email,omitempty"`
+		FirstName string         `json:"firstName,omitempty"`
+		LastName  string         `json:"lastName,omitempty"`
+		Images    []models.Image `json:"images,omitempty"`
 	}
 
 	var req RequestBody
@@ -120,29 +120,34 @@ func (us *UserService) UpdateUser(ctx *gin.Context) {
 	if err != nil {
 		res := utils.NewHttpResponse(http.StatusBadRequest, errors.Wrap(err, "Error in converting id to primitive.ObjectID"))
 		ctx.JSON(http.StatusBadRequest, res)
+		return
 	}
 
 	// Bind json
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		res := utils.NewHttpResponse(http.StatusBadRequest, errors.Wrap(err, "Request body is not valid"))
 		ctx.JSON(http.StatusBadRequest, res)
+		return
 	}
 
 	user := &models.User{
 		Email:     req.Email,
 		FirstName: req.FirstName,
 		LastName:  req.LastName,
+		Images:    req.Images,
 	}
 
 	// update in mongodb
 	if err = us.UserController.UpdateUser(userID, user); err != nil {
 		res := utils.NewHttpResponse(http.StatusBadRequest, errors.Wrap(err, "Error in updating user in mongodb"))
 		ctx.JSON(http.StatusBadRequest, res)
+		return
 	}
 
 	if updatedUser, err = us.UserController.GetUserByID(userID); err != nil {
 		res := utils.NewHttpResponse(http.StatusBadRequest, errors.Wrap(err, "Error in getting updateduser from mongodb"))
 		ctx.JSON(http.StatusBadRequest, res)
+		return
 	}
 
 	res := utils.NewHttpResponse(http.StatusOK, updatedUser)
@@ -158,12 +163,12 @@ func (us *UserService) UploadImageCloudinary(ctx *gin.Context) {
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		res := utils.NewHttpResponse(http.StatusBadRequest, errors.Wrap(err, "Request body is not valid"))
 		ctx.JSON(http.StatusBadRequest, res)
+		return
 	}
 
 	cld, _ := cloudinary.NewFromParams(string(os.Getenv("CLOUDINARY_CLOUD_NAME")), string(os.Getenv("CLOUDINARY_API_KEY")), string(os.Getenv("CLOUDINARY_API_SECRET")))
 
 	resp, err := cld.Upload.Upload(ctx, req.Image, uploader.UploadParams{Folder: req.Folder})
-
 	if err != nil {
 		res := utils.NewHttpResponse(http.StatusBadRequest, errors.Wrap(err, "Error in uploading image"))
 		ctx.JSON(http.StatusBadRequest, res)
@@ -182,6 +187,7 @@ func (us *UserService) RemoveImageCloudinary(ctx *gin.Context) {
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		res := utils.NewHttpResponse(http.StatusBadRequest, errors.Wrap(err, "Request body is not valid"))
 		ctx.JSON(http.StatusBadRequest, res)
+		return
 	}
 
 	cld, _ := cloudinary.NewFromParams(string(os.Getenv("CLOUDINARY_CLOUD_NAME")), string(os.Getenv("CLOUDINARY_API_KEY")), string(os.Getenv("CLOUDINARY_API_SECRET")))
@@ -200,7 +206,6 @@ func (us *UserService) RemoveImageCloudinary(ctx *gin.Context) {
 
 func (us *UserService) GetUserByEmail(ctx *gin.Context) {
 	email := ctx.Query("email")
-	fmt.Println(email)
 	// get users from mongodb
 	user, err := us.UserController.GetUserByEmail(email)
 	if err != nil {

@@ -8,9 +8,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-const DEFAULT_USER_ROLE = "user"
-const DEFAULT_USER_IMAGE = "https://res.cloudinary.com/sixty-seconds-idea-training-project/image/upload/v1656157889/users/default-user-image_LYizIFTei_ioicfh.png"
-
 type User struct {
 	ID          primitive.ObjectID `json:"_id,omitempty" bson:"_id,omitempty"`
 	FirebaseUID string             `json:"firebaseUid,omitempty" bson:"firebaseUid,omitempty"`
@@ -30,22 +27,7 @@ type Image struct {
 
 func (u *User) MarshalBSON() ([]byte, error) {
 
-	// deal with time stamps
-	if u.CreatedAt.IsZero() {
-		u.CreatedAt = time.Now()
-	}
 	u.UpdatedAt = time.Now()
-
-	// deal with default role
-	u.Role = DEFAULT_USER_ROLE
-
-	// deal with default image
-	if len(u.Images) == 0 {
-		u.Images = append(u.Images, Image{
-			About: "default",
-			Url:   DEFAULT_USER_IMAGE,
-		})
-	}
 
 	type custom User
 	return bson.Marshal((*custom)(u))
