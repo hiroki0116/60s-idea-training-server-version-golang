@@ -43,8 +43,8 @@ func init() {
 	}
 	// Connect to MongoDB
 	db.ConnectDB(os.Getenv("MONGO_URI"))
-	usercollection = db.MongoDB.Database("60s-idea-training").Collection("users")
-	ideacollection = db.MongoDB.Database("60s-idea-training").Collection("idearecords")
+	usercollection = db.MongoDB.Database("60s-idea-trainings").Collection("users")
+	ideacollection = db.MongoDB.Database("60s-idea-trainings").Collection("idearecords")
 	usercontroller = controllers.NewUserController(usercollection, ctx)
 	ideacontroller = controllers.NewIdeaController(ideacollection, ctx)
 	userservice = services.NewUserService(usercontroller)
