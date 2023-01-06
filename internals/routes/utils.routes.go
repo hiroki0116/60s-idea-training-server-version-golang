@@ -7,7 +7,6 @@ import (
 )
 
 func UtilsRoutes(rg *gin.RouterGroup) {
-	clienterrorroute := rg.Group("/error-message")
-	clienterrorroute.POST("/", services.LogClientError)
-	clienterrorroute.GET("/healthcheck", services.HealthCheck)
+	rg.POST("/error-message", services.LogClientError)
+	rg.GET("/healthcheck", services.HealthCheck)
 }
