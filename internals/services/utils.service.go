@@ -22,3 +22,8 @@ func LogClientError(ctx *gin.Context) {
 	res := utils.NewHttpResponse(http.StatusOK, nil)
 	ctx.JSON(http.StatusOK, res)
 }
+
+func HealthCheck(ctx *gin.Context) {
+	res := utils.NewHttpResponse(http.StatusOK, nil)
+	ctx.JSON(http.StatusOK, res)
+}

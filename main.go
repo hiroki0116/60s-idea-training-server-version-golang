@@ -41,17 +41,22 @@ func init() {
 			errors.Wrap(err, "Error loading .env file")
 		}
 	}
-	// Connect to MongoDB
 	db.ConnectDB(os.Getenv("MONGO_URI"))
+	// collections
 	usercollection = db.MongoDB.Database("60s-idea-trainings").Collection("users")
 	ideacollection = db.MongoDB.Database("60s-idea-trainings").Collection("idearecords")
+	// controllers
 	usercontroller = controllers.NewUserController(usercollection, ctx)
 	ideacontroller = controllers.NewIdeaController(ideacollection, ctx)
+	// services
 	userservice = services.NewUserService(usercontroller)
 	ideaservice = services.NewIdeaService(ideacontroller)
+	// middleware
 	requireauth = middleware.NewRequireAuth(usercontroller)
+	// routes
 	userroute = routes.NewUserRoutes(userservice, requireauth)
 	idearoute = routes.NewIdeaRoutes(ideaservice, requireauth)
+
 	server = gin.Default()
 	// CORS
 	server.Use(cors.New(cors.Config{
@@ -66,11 +71,11 @@ func init() {
 
 func main() {
 	defer db.MongoDB.Disconnect(ctx)
-	// routes
+	// setup routes
 	basepath := server.Group("/api")
 	userroute.UserRoutes(basepath)
 	idearoute.IdeaRoutes(basepath)
-	routes.ClientErrorRoutes(basepath)
+	routes.UtilsRoutes(basepath)
 
 	log.Fatalln(server.Run(":" + os.Getenv("PORT")))
 }
