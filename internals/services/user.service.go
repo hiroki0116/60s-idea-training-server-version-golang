@@ -38,10 +38,12 @@ func NewUserService(userController controllers.IUserController) IUserService {
 
 func (us *UserService) SignUp(ctx *gin.Context) {
 	type RequestBody struct {
-		FirstName string `json:"firstName"`
-		LastName  string `json:"lastName"`
-		Email     string `json:"email"`
-		Password  string `json:"password"`
+		FirstName   string         `json:"firstName"`
+		LastName    string         `json:"lastName,omitempty"`
+		Email       string         `json:"email"`
+		Password    string         `json:"password"`
+		FirebaseUID string         `json:"firebaseUID,omitempty"`
+		Images      []models.Image `json:"images,omitempty"`
 	}
 	var req RequestBody
 	var user models.User
@@ -65,11 +67,16 @@ func (us *UserService) SignUp(ctx *gin.Context) {
 	}
 
 	// register in firebase
-	firebaseUID, err := firebase.CreateUserInFirebase(req.Email, req.Password, req.FirstName, req.LastName)
-	if err != nil {
-		res := utils.NewHttpResponse(http.StatusBadRequest, errors.Wrap(err, "Error in creating user in firebase"))
-		ctx.JSON(http.StatusBadRequest, res)
-		return
+	var firebaseUID string
+	if req.FirebaseUID == "" {
+		firebaseUID, err = firebase.CreateUserInFirebase(req.Email, req.Password, req.FirstName, req.LastName)
+		if err != nil {
+			res := utils.NewHttpResponse(http.StatusBadRequest, errors.Wrap(err, "Error in creating user in firebase"))
+			ctx.JSON(http.StatusBadRequest, res)
+			return
+		}
+	} else {
+		firebaseUID = req.FirebaseUID
 	}
 
 	user.FirebaseUID = firebaseUID
@@ -209,8 +216,8 @@ func (us *UserService) GetUserByEmail(ctx *gin.Context) {
 	// get users from mongodb
 	user, err := us.UserController.GetUserByEmail(email)
 	if err != nil {
-		res := utils.NewHttpResponse(http.StatusBadRequest, errors.Wrap(err, "Error in getting user by email from mongodb"))
-		ctx.JSON(http.StatusBadRequest, res)
+		res := utils.NewHttpResponse(http.StatusOK, errors.Wrap(err, "No user found with this email"))
+		ctx.JSON(http.StatusOK, res)
 		return
 	}
 
