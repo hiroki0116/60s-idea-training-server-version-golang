@@ -7,7 +7,6 @@ require (
 	github.com/gin-gonic/gin v1.8.2
 	github.com/gobeam/mongo-go-pagination v0.0.8
 	github.com/joho/godotenv v1.4.0
-	github.com/snabb/isoweek v1.0.1
 )
 
 require (

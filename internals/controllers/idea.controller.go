@@ -8,7 +8,6 @@ import (
 
 	paginate "github.com/gobeam/mongo-go-pagination"
 	errors "github.com/pkg/errors"
-	"github.com/snabb/isoweek"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -372,9 +371,14 @@ func (ic *IdeaController) GetRecentIdeas(userID primitive.ObjectID) ([]*models.I
 }
 
 func (ic *IdeaController) GetWeeklyIdeas(userID primitive.ObjectID) ([]bson.M, time.Time, error) {
-	now := time.Now()
-	year, month, _ := now.UTC().Date()
-	lastMonday := isoweek.StartTime(year, int(month), time.UTC)
+	// get first day of week
+	weekday := time.Duration(time.Now().Weekday())
+	if weekday == 0 {
+		weekday = 7
+	}
+	year, month, day := time.Now().Date()
+	currentZeroDay := time.Date(year, month, day, 0, 0, 0, 0, time.UTC)
+	lastMonday := currentZeroDay.Add(-1 * (weekday - 1) * 24 * time.Hour)
 
 	matchStage := bson.D{
 		bson.E{
