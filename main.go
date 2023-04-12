@@ -12,7 +12,6 @@ import (
 	"time"
 
 	"github.com/gin-contrib/cors"
-	errors "github.com/pkg/errors"
 	"go.mongodb.org/mongo-driver/mongo"
 
 	"github.com/gin-gonic/gin"
@@ -38,7 +37,7 @@ func init() {
 	ctx = context.TODO()
 	if os.Getenv("STAGE") != "production" {
 		if err = godotenv.Load(); err != nil {
-			errors.Wrap(err, "Error loading .env file")
+			panic(err)
 		}
 	}
 	db.ConnectDB(os.Getenv("MONGO_URI"))
